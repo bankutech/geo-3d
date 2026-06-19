@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GEO 3D — Interactive Geometry Encyclopedia</title>
+<meta property="og:title" content="GEO 3D - Interactive Geometry Encyclopedia">
+<meta property="og:description" content="Explore mathematical foundations and 3D shapes.">
+<meta property="og:image" content="https://geo3d.app/assets/preview.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<style>
+:root{--bg:#050810;--bg2:#080d1a;--bg3:#0d1426;--surface:#111827;--surface2:#1a2235;--border:rgba(255,255,255,0.06);--bh:rgba(0,229,255,0.25);--text:#f0f4ff;--muted:#7a8ab0;--dim:#3d4d6b;--cyan:#00e5ff;--violet:#7c3aed;--teal:#0fd4b0;--amber:#f59e0b;--pink:#f472b6;--font:'Space Grotesk',sans-serif;--mono:'JetBrains Mono',monospace;--sw:260px;--hh:64px;}
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:16px;line-height:1.6;overflow-x:hidden;}
+::-webkit-scrollbar{width:4px;}::-webkit-scrollbar-track{background:var(--bg);}::-webkit-scrollbar-thumb{background:var(--bh);border-radius:2px;}
+#grid-bg{position:fixed;inset:0;z-index:0;pointer-events:none;background-image:linear-gradient(rgba(0,229,255,0.025) 1px,transparent 1px),linear-gradient(90deg,rgba(0,229,255,0.025) 1px,transparent 1px);background-size:40px 40px;mask-image:radial-gradient(ellipse 80% 80% at 50% 50%,black 20%,transparent 100%);}
+header{position:fixed;top:0;left:0;right:0;height:var(--hh);display:flex;align-items:center;justify-content:space-between;padding:0 1.75rem;background:rgba(5,8,16,0.88);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);z-index:200;}
+.logo{font-size:1.35rem;font-weight:700;letter-spacing:-0.5px;display:flex;align-items:center;gap:10px;}
+.logo-icon{width:30px;height:30px;background:linear-gradient(135deg,var(--cyan),var(--violet));border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#000;}
+.logo-text{background:linear-gradient(90deg,var(--cyan),var(--violet));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+nav.topnav{display:flex;align-items:center;gap:2px;}
+nav.topnav a{text-decoration:none;color:var(--muted);font-size:0.85rem;font-weight:500;padding:0.45rem 0.875rem;border-radius:8px;transition:all 0.2s;}
+nav.topnav a:hover{color:var(--text);background:rgba(255,255,255,0.05);}
+nav.topnav a.active{color:var(--cyan);background:rgba(0,229,255,0.08);}
+.hdr-right{display:flex;align-items:center;gap:0.75rem;}
+.srch-btn{display:flex;align-items:center;gap:8px;padding:0.45rem 0.875rem;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--muted);font-size:0.8rem;font-family:var(--font);cursor:pointer;transition:all 0.2s;}
+.srch-btn:hover{border-color:var(--bh);color:var(--text);}
+.srch-btn kbd{background:var(--surface2);padding:1px 5px;border-radius:4px;font-size:0.68rem;border:1px solid var(--border);}
+.burger{display:none;background:none;border:none;cursor:pointer;color:var(--text);padding:6px;flex-direction:column;gap:5px;}
+.burger span{display:block;width:20px;height:2px;background:var(--muted);border-radius:2px;transition:all 0.3s;}
+.app{display:flex;padding-top:var(--hh);min-height:100vh;position:relative;z-index:1;}
+.sidebar{width:var(--sw);position:fixed;top:var(--hh);left:0;height:calc(100vh - var(--hh));overflow-y:auto;background:rgba(5,8,16,0.97);border-right:1px solid var(--border);padding:1.25rem 0.65rem;z-index:100;transition:transform 0.3s ease;}
+.sb-label{font-size:0.62rem;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--dim);padding:0 0.65rem;margin-bottom:0.5rem;display:block;margin-top:0.25rem;}
+.sidebar ul{list-style:none;}
+.sidebar li{margin-bottom:2px;}
+.sidebar li[data-t]{display:flex;align-items:center;gap:9px;padding:0.55rem 0.7rem;border-radius:8px;cursor:pointer;transition:all 0.2s;color:var(--muted);font-size:0.815rem;font-weight:500;line-height:1.3;}
+.sidebar li[data-t]:hover{background:rgba(255,255,255,0.04);color:var(--text);}
+.sidebar li[data-t].active{background:rgba(0,229,255,0.07);color:var(--cyan);}
+.num{font-family:var(--mono);font-size:0.62rem;color:var(--dim);min-width:16px;font-weight:400;}
+.sidebar li[data-t].active .num{color:rgba(0,229,255,0.5);}
+.sb-prog{height:2px;background:var(--border);border-radius:1px;margin:0 0.65rem 1.25rem;overflow:hidden;}
+.sb-prog-fill{height:100%;background:linear-gradient(90deg,var(--cyan),var(--violet));border-radius:1px;transition:width 0.4s;width:0%;}
+main{flex:1;margin-left:var(--sw);padding:2.75rem 3.5rem;max-width:980px;}
+.module{display:none;animation:fadeUp 0.38s ease;}
+.module.active{display:block;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:translateY(0);}}
+h1.pt{font-size:2.6rem;font-weight:700;letter-spacing:-1px;line-height:1.15;margin-bottom:0.6rem;background:linear-gradient(135deg,#fff 30%,var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.ps{font-size:1.05rem;color:var(--muted);line-height:1.65;margin-bottom:2.25rem;max-width:580px;}
+h2.st{font-size:1rem;font-weight:600;color:var(--text);margin-bottom:0.875rem;display:flex;align-items:center;gap:8px;}
+h2.st::before{content:'';width:3px;height:16px;background:linear-gradient(var(--cyan),var(--violet));border-radius:2px;flex-shrink:0;}
+h3.ct{font-size:0.95rem;font-weight:600;color:var(--text);margin-bottom:0.4rem;}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1.35rem;transition:border-color 0.2s,transform 0.2s;}
+.card:hover{border-color:rgba(0,229,255,0.1);transform:translateY(-2px);}
+.card p{color:var(--muted);font-size:0.875rem;line-height:1.65;}
+.cg{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:0.875rem;margin-bottom:1.75rem;}
+.c2{display:grid;grid-template-columns:1fr 1fr;gap:0.875rem;margin-bottom:1.75rem;}
+.ca{border-left:3px solid var(--cyan);background:linear-gradient(135deg,rgba(0,229,255,0.04),transparent);}
+.cv{border-left:3px solid var(--violet);background:linear-gradient(135deg,rgba(124,58,237,0.06),transparent);}
+.ct2{border-left:3px solid var(--teal);background:linear-gradient(135deg,rgba(15,212,176,0.06),transparent);}
+.camt{border-left:3px solid var(--amber);background:linear-gradient(135deg,rgba(245,158,11,0.06),transparent);}
+.ipanel{background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden;margin-bottom:1.75rem;}
+.ipanel .ph{padding:1.1rem 1.4rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.pbody{display:grid;grid-template-columns:1fr 1fr;gap:0;}
+.pvis{background:rgba(0,0,0,0.45);display:flex;align-items:center;justify-content:center;min-height:260px;border-right:1px solid var(--border);padding:1rem;overflow:hidden;position:relative;}
+.pctrl{padding:1.4rem;}
+.badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:20px;font-size:0.68rem;font-weight:600;letter-spacing:0.04em;text-transform:uppercase;}
+.bc{background:rgba(0,229,255,0.1);color:var(--cyan);border:1px solid rgba(0,229,255,0.2);}
+.bv{background:rgba(124,58,237,0.1);color:#a78bfa;border:1px solid rgba(124,58,237,0.2);}
+.bt{background:rgba(15,212,176,0.1);color:var(--teal);border:1px solid rgba(15,212,176,0.2);}
+.ba{background:rgba(245,158,11,0.1);color:var(--amber);border:1px solid rgba(245,158,11,0.2);}
+.stats{background:rgba(0,0,0,0.35);border-radius:10px;padding:0.875rem 1.1rem;border-left:3px solid var(--cyan);margin-top:0.875rem;}
+.stats p{font-family:var(--mono);font-size:0.83rem;color:var(--muted);margin:0.25rem 0;display:flex;align-items:baseline;gap:6px;}
+.val{color:var(--cyan);font-size:1.05rem;font-weight:500;}
+input[type=range]{width:100%;-webkit-appearance:none;height:4px;border-radius:2px;background:var(--surface2);outline:none;margin:0.65rem 0;}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:15px;height:15px;border-radius:50%;background:var(--cyan);cursor:pointer;box-shadow:0 0 8px rgba(0,229,255,0.45);}
+input[type=number],input[type=text],select{background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--font);font-size:0.875rem;padding:0.45rem 0.7rem;outline:none;transition:border-color 0.2s;width:100%;}
+input[type=number]:focus,input[type=text]:focus,select:focus{border-color:var(--bh);}
+input[type=number]{width:auto;}
+select option{background:var(--bg2);}
+.fl{display:block;font-size:0.78rem;color:var(--muted);margin-bottom:0.25rem;margin-top:0.65rem;}
+.btn{padding:0.55rem 1.1rem;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--muted);font-family:var(--font);font-size:0.82rem;font-weight:500;cursor:pointer;transition:all 0.2s;}
+.btn:hover{border-color:var(--bh);color:var(--cyan);background:rgba(0,229,255,0.05);}
+.btn.active,.btn-p{background:rgba(0,229,255,0.09);border-color:var(--bh);color:var(--cyan);}
+.br{display:flex;flex-wrap:wrap;gap:0.45rem;margin:0.65rem 0;}
+.vwrap{width:100%;height:460px;background:rgba(0,0,0,0.5);border:1px solid var(--border);border-radius:16px;overflow:hidden;position:relative;margin-bottom:1.4rem;}
+.vwrap canvas{display:block;width:100%!important;height:100%!important;outline:none;}
+.vhint{position:absolute;bottom:0.875rem;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.65);backdrop-filter:blur(10px);border:1px solid var(--border);border-radius:20px;padding:0.35rem 0.75rem;font-size:0.73rem;color:var(--muted);pointer-events:none;}
+.formula{display:inline-flex;align-items:center;background:rgba(124,58,237,0.1);border:1px solid rgba(124,58,237,0.2);border-radius:8px;padding:0.45rem 0.875rem;font-family:var(--mono);font-size:1rem;color:#a78bfa;margin:0.4rem 0;}
+.formula-lg{font-size:1.35rem;padding:0.65rem 1.35rem;display:block;text-align:center;margin:1rem 0;}
+.fgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:0.7rem;margin-top:0.875rem;}
+.fc{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:0.875rem;text-align:center;}
+.fc-name{font-size:0.7rem;color:var(--muted);margin-bottom:0.35rem;text-transform:uppercase;letter-spacing:0.05em;}
+.fc-eq{font-family:var(--mono);font-size:0.95rem;color:#a78bfa;font-weight:500;}
+.sblock{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1.15rem 1.4rem;margin-bottom:0.875rem;transition:border-color 0.2s;}
+.sblock:hover{border-color:rgba(0,229,255,0.1);}
+.sblock h4{font-size:0.9rem;color:var(--text);margin-bottom:0.2rem;}
+.sblock p{color:var(--muted);font-size:0.83rem;margin-bottom:0.65rem;}
+.tabs{display:flex;gap:0.35rem;flex-wrap:wrap;margin-bottom:1.75rem;padding-bottom:1.1rem;border-bottom:1px solid var(--border);}
+.tab-btn{padding:0.4rem 0.8rem;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--muted);font-family:var(--font);font-size:0.78rem;font-weight:500;cursor:pointer;transition:all 0.2s;}
+.tab-btn:hover{color:var(--text);border-color:rgba(255,255,255,0.1);}
+.tab-btn.active{background:rgba(0,229,255,0.08);border-color:var(--bh);color:var(--cyan);}
+.tc{display:none;}.tc.active{display:block;animation:fadeUp 0.3s ease;}
+.tsrow{display:grid;grid-template-columns:repeat(3,1fr);gap:0.7rem;margin-bottom:1rem;}
+.tscard{background:var(--surface2);border-radius:10px;padding:0.8rem;text-align:center;}
+.tscard .tv{font-size:1.6rem;font-weight:700;font-family:var(--mono);color:var(--cyan);line-height:1;}
+.tscard .tl{font-size:0.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-top:0.2rem;}
+.divider{height:1px;background:var(--border);margin:1.75rem 0;}
+.tech-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.35rem;transition:all 0.2s;}
+.tech-card:hover{border-color:rgba(0,229,255,0.12);transform:translateY(-3px);}
+.tech-card .icon{font-size:1.75rem;margin-bottom:0.65rem;display:block;}
+.tech-card h3{font-size:0.95rem;font-weight:600;margin-bottom:0.4rem;}
+.tech-card p{color:var(--muted);font-size:0.875rem;line-height:1.6;}
+.mfooter{display:flex;justify-content:space-between;align-items:center;padding:1.75rem 0 0.5rem;border-top:1px solid var(--border);margin-top:2.5rem;}
+.bnav{display:flex;align-items:center;gap:7px;padding:0.55rem 1.1rem;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--muted);font-family:var(--font);font-size:0.83rem;cursor:pointer;transition:all 0.2s;}
+.bnav:hover{border-color:var(--bh);color:var(--cyan);}
+.abar{height:3px;background:linear-gradient(90deg,var(--cyan),var(--violet),var(--teal));border-radius:2px;margin-bottom:1.75rem;width:48px;}
+#srch-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.8);backdrop-filter:blur(14px);z-index:500;align-items:flex-start;justify-content:center;padding-top:14vh;}
+#srch-overlay.vis{display:flex;}
+#srch-box{width:90%;max-width:540px;background:var(--surface);border:1px solid rgba(0,229,255,0.2);border-radius:16px;padding:1.35rem;}
+#srch-input{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:0.8rem 1rem;font-size:0.95rem;color:var(--text);font-family:var(--font);outline:none;}
+#srch-results{margin-top:0.875rem;}
+.sri{display:flex;align-items:center;gap:9px;padding:0.6rem 0.7rem;border-radius:8px;cursor:pointer;color:var(--muted);font-size:0.85rem;transition:all 0.15s;}
+.sri:hover{background:rgba(0,229,255,0.06);color:var(--cyan);}
+.srch-close{display:block;margin-top:0.65rem;text-align:center;color:var(--dim);font-size:0.75rem;cursor:pointer;}
+#sb-ov{display:none;position:fixed;inset:0;z-index:250;background:rgba(0,0,0,0.5);}
+#sb-ov.vis{display:block;}
+canvas.ic{display:block;max-width:100%;height:auto;}
+@media(max-width:900px){.burger{display:flex;}.topnav{display:none;}.srch-btn{display:none;}.sidebar{transform:translateX(-100%);z-index:300;background:var(--bg2);}.sidebar.open{transform:translateX(0);}main{margin-left:0;padding:2rem 1.25rem;}.pbody{grid-template-columns:1fr;}.pvis{border-right:none;border-bottom:1px solid var(--border);}.c2{grid-template-columns:1fr;}.vwrap{height:300px;}h1.pt{font-size:2rem;}.tsrow{grid-template-columns:1fr 1fr;}}
+@media(max-width:600px){main{padding:1.5rem 0.875rem;}.cg{grid-template-columns:1fr;}.fgrid{grid-template-columns:1fr 1fr;}.tsrow{grid-template-columns:1fr;}}
+</style>
+
+</head>
+<body>
+<div id="grid-bg"></div>
+
+<div id="srch-overlay">
+  <div id="srch-box">
+    <input id="srch-input" placeholder="Search topics, formulas, concepts…" autocomplete="off" oninput="doSearch(this.value)">
+    <div id="srch-results"></div>
+    <span class="srch-close" onclick="closeSearch()">Press Esc to close</span>
+  </div>
+</div>
+<div id="sb-ov" onclick="closeSidebar()"></div>
+
+<header>
+
+  <div class="logo">
+    <div class="logo-icon">G</div>
+    GEO <span class="logo-text">3D</span>
+  </div>
+  <nav class="topnav">
+    <a href="index.html#hero">Home</a>
+    <a href="index.html#solids">Library</a>
+    <a href="index.html#viewer">Viewer</a>
+    <a href="index.html#gallery">Gallery</a>
+    <a href="learn.html" >Learn</a>
+    <a href="math.html" class="active">Math</a>
+  </nav>
+  <div class="hdr-right">
+    <button class="srch-btn" onclick="openSearch()">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      Search <kbd>⌘K</kbd>
+    </button>
+    <button class="burger" id="burger" onclick="toggleSidebar()">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+
+</header>
+
+<div class="app">
+<aside class="sidebar" id="sidebar">
+  <span class="sb-label">Progress</span>
+  <div class="sb-prog"><div class="sb-prog-fill" id="prog-fill"></div></div>
+  <span class="sb-label">Foundations</span>
+  <ul id="nav-list">
+    <li data-t="m-coords" class="active"><span class="num">01</span>Coordinates</li>
+    <li data-t="m-vectors"><span class="num">02</span>Vectors</li>
+    <li data-t="m-matrices"><span class="num">03</span>Matrices</li>
+    <li data-t="m-quaternions"><span class="num">04</span>Quaternions</li>
+    <li data-t="m-euler"><span class="num">05</span>Euler's Formula</li>
+  </ul>
+</aside>
+<main id="content">
+
+<!-- ══ 1. COORDS ══ -->
+<section id="m-coords" class="module active">
+<div class="abar"></div>
+<h1 class="pt">Coordinate Systems</h1>
+<p class="ps">Understanding how points are mathematically defined in three-dimensional space.</p>
+<div class="c2">
+<div class="card ca"><span class="badge bc" style="margin-bottom:0.5rem;">Linear</span><h3 class="ct">Cartesian (x, y, z)</h3><p>The standard 3D grid system. Points are defined by their distance along three mutually perpendicular axes.</p></div>
+<div class="card cv"><span class="badge bv" style="margin-bottom:0.5rem;">Angular</span><h3 class="ct">Spherical (r, θ, φ)</h3><p>Points are defined by radial distance, polar angle (inclination), and azimuthal angle. Crucial for orbital mechanics and spherical mapping.</p></div>
+</div>
+<div class="card ct2"><h3 class="ct">Distance in 3D</h3>
+<div class="formula formula-lg">d = √((x₂-x₁)² + (y₂-y₁)² + (z₂-z₁)²)</div>
+<p>The Euclidean distance formula expanded into three dimensions. This exact formula powers the bounding sphere calculations in our physics engine.</p>
+</div>
+<div class="mfooter"><span></span><button class="bnav" onclick="goTo('m-vectors')">Vectors →</button></div>
+</section>
+
+<!-- ══ 2. VECTORS ══ -->
+<section id="m-vectors" class="module">
+<div class="abar"></div>
+<h1 class="pt">Vectors & Dot/Cross Products</h1>
+<p class="ps">Mathematical entities with magnitude and direction, essential for physics and rendering calculations.</p>
+<div class="fgrid" style="margin-bottom:1.75rem;">
+<div class="fc"><div class="fc-name">Dot Product</div><div class="fc-eq">A · B = |A||B|cos(θ)</div></div>
+<div class="fc"><div class="fc-name">Cross Product Magnitude</div><div class="fc-eq">|A × B| = |A||B|sin(θ)</div></div>
+</div>
+<div class="c2">
+<div class="card ca"><span class="badge bc" style="margin-bottom:0.5rem;">Scalar Result</span><h3 class="ct">Dot Product</h3><p>Calculates the projection of one vector onto another. Crucial for lighting calculations (Diffuse shading uses N·L).</p></div>
+<div class="card cv"><span class="badge bv" style="margin-bottom:0.5rem;">Vector Result</span><h3 class="ct">Cross Product</h3><p>Produces a new vector perpendicular to the plane formed by the input vectors. Essential for calculating face normals in 3D geometry.</p></div>
+</div>
+<div class="mfooter"><button class="bnav" onclick="goTo('m-coords')">← Coordinates</button><button class="bnav" onclick="goTo('m-matrices')">Matrices →</button></div>
+</section>
+
+<!-- ══ 3. MATRICES ══ -->
+<section id="m-matrices" class="module">
+<div class="abar"></div>
+<h1 class="pt">Transformation Matrices</h1>
+<p class="ps">In 3D graphics, translating, rotating, and scaling objects is done efficiently using 4x4 matrices.</p>
+<div class="card ct2" style="margin-bottom:1.5rem;"><h3 class="ct">Why 4x4 Matrices?</h3><p>A 3x3 matrix can represent rotation and scaling, but cannot represent translation. By adding a 4th coordinate (homogeneous coordinates, w), we can encode translation within the matrix multiplication, allowing us to combine complex transformations into a single matrix.</p></div>
+<div class="cg">
+<div class="card"><h3 class="ct">Identity Matrix</h3><p>The starting point of all transformations. Leaves vertices unchanged when multiplied.</p></div>
+<div class="card"><h3 class="ct">Projection Matrix</h3><p>Converts 3D coordinates into 2D screen space, applying perspective distortion (objects further away appear smaller).</p></div>
+<div class="card"><h3 class="ct">View Matrix</h3><p>Transforms the world based on the camera's position and orientation. It moves the world around the camera.</p></div>
+</div>
+<div class="mfooter"><button class="bnav" onclick="goTo('m-vectors')">← Vectors</button><button class="bnav" onclick="goTo('m-quaternions')">Quaternions →</button></div>
+</section>
+
+<!-- ══ 4. QUATERNIONS ══ -->
+<section id="m-quaternions" class="module">
+<div class="abar"></div>
+<h1 class="pt">Quaternions</h1>
+<p class="ps">Complex mathematical objects used to represent 3D rotations without Gimbal Lock.</p>
+<div class="card camt" style="margin-bottom:1.5rem;"><h3 class="ct">Gimbal Lock</h3><p>When rotating using Euler angles (pitch, yaw, roll), two axes can align, causing a loss of one degree of freedom. Quaternions, defined as $q = w + xi + yj + zk$, avoid this completely and provide perfectly smooth spherical linear interpolation (Slerp).</p></div>
+<div class="ipanel">
+<div class="ph"><h2 class="st" style="margin:0;">Quaternion Formula</h2><span class="badge ba">Complex Math</span></div>
+<div class="pbody">
+<div class="pctrl" style="width:100%;">
+<div class="formula formula-lg">i² = j² = k² = ijk = -1</div>
+<p style="text-align:center;color:var(--muted);margin-top:1rem;">The fundamental equation for quaternion multiplication discovered by William Rowan Hamilton.</p>
+</div>
+</div>
+</div>
+<div class="mfooter"><button class="bnav" onclick="goTo('m-matrices')">← Matrices</button><button class="bnav" onclick="goTo('m-euler')">Euler's Formula →</button></div>
+</section>
+
+<!-- ══ 5. EULER ══ -->
+<section id="m-euler" class="module">
+<div class="abar"></div>
+<h1 class="pt">Euler's Polyhedron Formula</h1>
+<p class="ps">A fundamental topological invariant for all convex polyhedra.</p>
+<div class="formula formula-lg">V - E + F = 2</div>
+<div class="cg">
+<div class="card ca"><h3 class="ct">Vertices (V)</h3><p>The corner points where edges meet.</p></div>
+<div class="card cv"><h3 class="ct">Edges (E)</h3><p>The line segments connecting vertices.</p></div>
+<div class="card ct2"><h3 class="ct">Faces (F)</h3><p>The flat 2D surfaces bounding the solid.</p></div>
+</div>
+<div class="ipanel">
+<div class="ph"><h2 class="st" style="margin:0;">Verification for Platonic Solids</h2><span class="badge bc">Topology</span></div>
+<div class="pctrl" style="width:100%;">
+<div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr 1fr;gap:0.5rem;text-align:center;margin-bottom:1rem;color:var(--cyan);font-weight:600;">
+<div>Solid</div><div>Vertices (V)</div><div>Edges (E)</div><div>Faces (F)</div><div>V - E + F</div>
+</div>
+<div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr 1fr;gap:0.5rem;text-align:center;margin-bottom:0.5rem;color:var(--text);">
+<div>Tetrahedron</div><div>4</div><div>6</div><div>4</div><div style="color:var(--teal);font-weight:bold;">2</div>
+</div>
+<div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr 1fr;gap:0.5rem;text-align:center;margin-bottom:0.5rem;color:var(--text);">
+<div>Cube</div><div>8</div><div>12</div><div>6</div><div style="color:var(--teal);font-weight:bold;">2</div>
+</div>
+<div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr 1fr;gap:0.5rem;text-align:center;margin-bottom:0.5rem;color:var(--text);">
+<div>Octahedron</div><div>6</div><div>12</div><div>8</div><div style="color:var(--teal);font-weight:bold;">2</div>
+</div>
+<div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr 1fr;gap:0.5rem;text-align:center;margin-bottom:0.5rem;color:var(--text);">
+<div>Dodecahedron</div><div>20</div><div>30</div><div>12</div><div style="color:var(--teal);font-weight:bold;">2</div>
+</div>
+<div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr 1fr;gap:0.5rem;text-align:center;color:var(--text);">
+<div>Icosahedron</div><div>12</div><div>30</div><div>20</div><div style="color:var(--teal);font-weight:bold;">2</div>
+</div>
+</div>
+</div>
+<div class="mfooter"><button class="bnav" onclick="goTo('m-quaternions')">← Quaternions</button><span></span></div>
+</section>
+
+</main>
+</div>
+
+<script>
+// Logic for sidebar navigation
+const items = document.querySelectorAll('#nav-list li');
+const modules = document.querySelectorAll('.module');
+const progFill = document.getElementById('prog-fill');
+
+function updateProgress() {
+    let activeIdx = 0;
+    items.forEach((item, i) => { if(item.classList.contains('active')) activeIdx = i; });
+    if (items.length > 0) {
+        const pct = ((activeIdx + 1) / items.length) * 100;
+        if(progFill) progFill.style.width = pct + '%';
+    }
+}
+
+function goTo(id) {
+    items.forEach(li => {
+        if(li.getAttribute('data-t') === id) li.classList.add('active');
+        else li.classList.remove('active');
+    });
+    modules.forEach(mod => {
+        if(mod.id === id) mod.classList.add('active');
+        else mod.classList.remove('active');
+    });
+    window.scrollTo({top: 0, behavior: 'smooth'});
+    updateProgress();
+    if(typeof closeSidebar === 'function') closeSidebar();
+}
+
+items.forEach(item => {
+    item.addEventListener('click', () => {
+        goTo(item.getAttribute('data-t'));
+    });
+});
+
+const sidebar = document.getElementById('sidebar');
+const sbOv = document.getElementById('sb-ov');
+function toggleSidebar() {
+    if(sidebar) sidebar.classList.toggle('open');
+    if(sbOv) sbOv.classList.toggle('vis');
+}
+function closeSidebar() {
+    if(sidebar) sidebar.classList.remove('open');
+    if(sbOv) sbOv.classList.remove('vis');
+}
+
+updateProgress();
+</script>
+<script src="js/script.js?v=2" defer></script>
+</body>
+</html>

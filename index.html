@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Explore the beauty of mathematics and geometric solids through a modern, interactive 3D WebGL visualization engine.">
+    <title>Geometry in Three Dimensions</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+    <meta property="og:title" content="GEO 3D - Interactive Geometry Encyclopedia">
+    <meta property="og:description" content="Explore mathematical foundations and 3D shapes.">
+    <meta property="og:image" content="https://geo3d.app/assets/preview.png">
+    <link rel="stylesheet" href="css/styles.css?v=3">
+</head>
+<body class="dark-mode">
+    <!-- Custom Cursor -->
+    <div id="custom-cursor"></div>
+    <div id="scroll-progress"></div>
+    <button id="fab-top" class="glass-btn" aria-label="Scroll to top" style="display: none;">↑</button>
+
+    <!-- Loading Screen -->
+    <div id="loader">
+        <div class="loader-geometry"></div>
+        <h2>Loading...</h2>
+    </div>
+
+    <!-- Background Effects -->
+    <canvas id="particle-canvas"></canvas>
+    <div id="mouse-glow"></div>
+
+    <!-- Header Navigation -->
+    <header class="glass-header">
+        <div class="logo"><span id="scramble-logo">GEO</span><span class="gradient-text">3D</span></div>
+        <button id="mobile-menu-btn" class="hamburger-btn" aria-label="Toggle navigation menu">
+            <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/></svg>
+        </button>
+        <nav class="nav-links" id="main-nav">
+            <a href="#hero">Home</a>
+            <a href="#solids">Library</a>
+            <a href="#viewer">Viewer</a>
+            <a href="#gallery">Gallery</a>
+            <a href="learn.html">Learn</a>
+            <a href="math.html">Math</a>
+            <div class="controls">
+                <label for="shape-color" class="sr-only">Change Shape Color</label>
+                <input type="color" id="shape-color" value="#00e5ff" class="glass-btn color-picker" aria-label="Change shape color" title="Change Shape Color">
+                <label for="shape-search" class="sr-only">Search shapes</label>
+                <input type="text" id="shape-search" placeholder="Search shapes..." class="glass-input" aria-label="Search geometric shapes">
+                <button id="theme-toggle" class="glass-btn" aria-label="Toggle light and dark mode">Toggle Light</button>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <!-- 1. Hero Section — Immersive 3D Landing -->
+        <section id="hero" class="hero-section">
+            <div id="hero-3d-canvas"></div>
+            <div class="hero-gradient-fade"></div>
+            <div class="hero-overlay">
+                <div class="hero-content">
+                    <div class="hero-badge">✦ Interactive 3D Experience</div>
+                    <h1 class="scramble-text" data-value="Geometry in Three Dimensions">Geometry in <br><span class="gradient-text">Three Dimensions</span></h1>
+                    <p id="typewriter-text" data-text="Exploring mathematical beauty through modern visualization."></p>
+                    <div class="cta-group">
+                        <a href="#solids" class="btn primary-btn">Explore Shapes</a>
+                        <a href="#gallery" class="btn secondary-btn">View Gallery</a>
+                        <a href="learn.html" class="btn secondary-btn">📖 Learn</a>
+                    </div>
+                </div>
+            </div>
+            <div class="hero-scroll-hint">
+                <span>Scroll to explore</span>
+                <div class="scroll-arrow"></div>
+            </div>
+        </section>
+        <section id="viewer" class="viewer-section">
+            <h2 class="section-title scroll-reveal">3D <span class="gradient-text">Viewer</span></h2>
+            <div class="viewer-container scroll-reveal glass-card" id="threejs-container" role="region" aria-label="Interactive 3D geometry viewer">
+                <div id="geometry-stats" class="glass-card">
+                    <h3 style="margin-top:0; color:var(--primary); font-size:1.2rem; margin-bottom: 0.2rem;">Shape Properties</h3>
+                    <h4 id="active-shape-title" style="margin-bottom:0.8rem; color:var(--text-primary); text-transform:capitalize; font-size:0.95rem; font-weight:600;">Torus Knot</h4>
+                    <p>Vertices: <span id="stat-vertices">0</span></p>
+                    <p>Edges: <span id="stat-edges">0</span></p>
+                    <p>Faces: <span id="stat-faces">0</span></p>
+                </div>
+            </div>
+            
+            <div class="viewer-controls glass-card scroll-reveal">
+                <div class="control-group">
+                    <button id="btn-gravity" class="glass-btn magnetic-btn">Toggle Gravity</button>
+                    <button id="btn-screenshot" class="glass-btn magnetic-btn">Take Screenshot</button>
+                    <button id="btn-export-obj" class="glass-btn magnetic-btn">Export OBJ</button>
+                </div>
+                <div class="control-group slider-group">
+                    <label for="speed-slider">Spin Speed:</label>
+                    <input type="range" id="speed-slider" min="0" max="0.05" step="0.001" value="0.01">
+                </div>
+            </div>
+        </section>
+
+        <section id="solids" class="solids-section">
+            <h2 class="section-title scroll-reveal">Featured <span class="gradient-text">Solids</span></h2>
+            <div id="solids-container">
+                <h3 class="category-title scroll-reveal">Basic Solids</h3>
+                <div class="grid-container solids-grid">
+                    <div class="shape-card scroll-reveal" data-shape="cube"><h3>Cube</h3></div>
+                    <div class="shape-card scroll-reveal" data-shape="cuboid"><h3>Cuboid</h3></div>
+                    <div class="shape-card scroll-reveal" data-shape="sphere"><h3>Sphere</h3></div>
+                    <div class="shape-card scroll-reveal" data-shape="hemisphere"><h3>Hemisphere</h3></div>
+                    <div class="shape-card scroll-reveal" data-shape="cylinder"><h3>Cylinder</h3></div>
+                    <div class="shape-card scroll-reveal" data-shape="cone"><h3>Cone</h3></div>
+                </div>
+
+                <h3 class="category-title scroll-reveal">Pyramids</h3>
+                <div class="grid-container solids-grid">
+                    <div class="shape-card scroll-reveal" data-shape="pyramid_3"><h3>Triangular Pyramid</h3></div>
+                    <div class="shape-card scroll-reveal" data-shape="pyramid_4"><h3>Square Pyramid</h3></div>
+                    <div class="shape-card scroll-reveal" data-shape="pyramid_5"><h3>Pentagonal Pyramid</h3></div>
+                    <div class="shape-card scroll-reveal" data-shape="pyramid_6"><h3>Hexagonal Pyramid</h3></div>
+                </div>
+
+                <h3 class="category-title scroll-reveal">Prisms</h3>
+                <div class="grid-container solids-grid">
+                    <div class="shape-card scroll-reveal" data-shape="prism_3"><h3>Triangular Prism</h3></div>
+                    <div class="shape-card scroll-reveal" data-shape="prism_4"><h3>Rectangular Prism</h3></div>
+                    <div class="shape-card scroll-reveal" data-shape="prism_5"><h3>Pentagonal Prism</h3></div>
+                    <div class="shape-card scroll-reveal" data-shape="prism_6"><h3>Hexagonal Prism</h3></div>
+                </div>
+
+                <h3 class="category-title scroll-reveal">Platonic Solids</h3>
+                <div class="grid-container solids-grid">
+                    <div class="shape-card scroll-reveal" data-shape="tetrahedron"><h3>Tetrahedron</h3></div>
+                    <div class="shape-card scroll-reveal" data-shape="cube"><h3>Hexahedron (Cube)</h3></div>
+                    <div class="shape-card scroll-reveal" data-shape="octahedron"><h3>Octahedron</h3></div>
+                    <div class="shape-card scroll-reveal" data-shape="dodecahedron"><h3>Dodecahedron</h3></div>
+                    <div class="shape-card scroll-reveal" data-shape="icosahedron"><h3>Icosahedron</h3></div>
+                </div>
+
+                <h3 class="category-title scroll-reveal">Other Solids</h3>
+                <div class="grid-container solids-grid">
+                    <div class="shape-card scroll-reveal" data-shape="torus"><h3>Torus</h3></div>
+                    <div class="shape-card scroll-reveal" data-shape="ellipsoid"><h3>Ellipsoid</h3></div>
+                    <div class="shape-card scroll-reveal" data-shape="frustum"><h3>Frustum</h3></div>
+                    <div class="shape-card scroll-reveal" data-shape="capsule"><h3>Capsule</h3></div>
+                    <div class="shape-card scroll-reveal" data-shape="bipyramid"><h3>Bipyramid</h3></div>
+                    <div class="shape-card scroll-reveal" data-shape="antiprism"><h3>Antiprism</h3></div>
+                </div>
+            </div>
+            <p id="no-results" style="display: none; text-align: center; margin-top: 2rem;">No shapes found.</p>
+        </section>
+
+        <section id="gallery" class="gallery-section">
+            <h2 class="section-title scroll-reveal">Visualization <span class="gradient-text">Gallery</span></h2>
+            <div class="gallery-grid">
+                <div class="gallery-item glass-card scroll-reveal" data-view="wireframe" aria-label="Wireframe view render">
+                    <img class="gallery-img" src="assets/gallery/wireframe_view_1781098641328.png" alt="Wireframe rendering of a Torus Knot" onerror="this.style.display='none'">
+                    <h3>Wireframe View</h3>
+                </div>
+                <div class="gallery-item glass-card scroll-reveal" data-view="solid" aria-label="Solid view render">
+                    <img class="gallery-img" src="assets/gallery/solid_view_1781098651804.png" alt="Solid grey rendering of an Icosahedron" onerror="this.style.display='none'">
+                    <h3>Solid View</h3>
+                </div>
+                <div class="gallery-item glass-card scroll-reveal" data-view="neon" aria-label="Neon view render">
+                    <img class="gallery-img" src="assets/gallery/neon_view_1781098665350.png" alt="Neon glowing purple rendering of a Dodecahedron" onerror="this.style.display='none'">
+                    <h3>Neon View</h3>
+                </div>
+                <div class="gallery-item glass-card scroll-reveal" data-view="educational" aria-label="Educational view render">
+                    <img class="gallery-img" src="assets/gallery/educational_view_1781098683038.png" alt="Educational white and black rendering of a Prism" onerror="this.style.display='none'">
+                    <h3>Educational View</h3>
+                </div>
+            </div>
+        </section></main>
+
+    <!-- 6. Footer -->
+    <footer class="glass-footer">
+        <p>&copy; 2026 Geometry in Three Dimensions. All rights reserved.</p>
+    </footer>
+
+    <!-- Three.js Libraries (Deferred for performance) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/exporters/OBJExporter.js" defer></script>
+    
+    <!-- Physics Engine -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cannon.js/0.6.2/cannon.min.js" defer></script>
+
+    <!-- Three.js Post-Processing (Deferred) -->
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/RenderPass.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/ShaderPass.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js" defer></script>
+    
+    <script src="js/script.js?v=3" defer></script>
+</body>
+</html>
+

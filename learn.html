@@ -1,0 +1,1667 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GEO 3D — Interactive Geometry Encyclopedia</title>
+<meta property="og:title" content="GEO 3D - Interactive Geometry Encyclopedia">
+<meta property="og:description" content="Explore mathematical foundations and 3D shapes.">
+<meta property="og:image" content="https://geo3d.app/assets/preview.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<style>
+:root{--bg:#050810;--bg2:#080d1a;--bg3:#0d1426;--surface:#111827;--surface2:#1a2235;--border:rgba(255,255,255,0.06);--bh:rgba(0,229,255,0.25);--text:#f0f4ff;--muted:#7a8ab0;--dim:#3d4d6b;--cyan:#00e5ff;--violet:#7c3aed;--teal:#0fd4b0;--amber:#f59e0b;--pink:#f472b6;--font:'Space Grotesk',sans-serif;--mono:'JetBrains Mono',monospace;--sw:260px;--hh:64px;}
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:16px;line-height:1.6;overflow-x:hidden;}
+::-webkit-scrollbar{width:4px;}::-webkit-scrollbar-track{background:var(--bg);}::-webkit-scrollbar-thumb{background:var(--bh);border-radius:2px;}
+#grid-bg{position:fixed;inset:0;z-index:0;pointer-events:none;background-image:linear-gradient(rgba(0,229,255,0.025) 1px,transparent 1px),linear-gradient(90deg,rgba(0,229,255,0.025) 1px,transparent 1px);background-size:40px 40px;mask-image:radial-gradient(ellipse 80% 80% at 50% 50%,black 20%,transparent 100%);}
+header{position:fixed;top:0;left:0;right:0;height:var(--hh);display:flex;align-items:center;justify-content:space-between;padding:0 1.75rem;background:rgba(5,8,16,0.88);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);z-index:200;}
+.logo{font-size:1.35rem;font-weight:700;letter-spacing:-0.5px;display:flex;align-items:center;gap:10px;}
+.logo-icon{width:30px;height:30px;background:linear-gradient(135deg,var(--cyan),var(--violet));border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#000;}
+.logo-text{background:linear-gradient(90deg,var(--cyan),var(--violet));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+nav.topnav{display:flex;align-items:center;gap:2px;}
+nav.topnav a{text-decoration:none;color:var(--muted);font-size:0.85rem;font-weight:500;padding:0.45rem 0.875rem;border-radius:8px;transition:all 0.2s;}
+nav.topnav a:hover{color:var(--text);background:rgba(255,255,255,0.05);}
+nav.topnav a.active{color:var(--cyan);background:rgba(0,229,255,0.08);}
+.hdr-right{display:flex;align-items:center;gap:0.75rem;}
+.srch-btn{display:flex;align-items:center;gap:8px;padding:0.45rem 0.875rem;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--muted);font-size:0.8rem;font-family:var(--font);cursor:pointer;transition:all 0.2s;}
+.srch-btn:hover{border-color:var(--bh);color:var(--text);}
+.srch-btn kbd{background:var(--surface2);padding:1px 5px;border-radius:4px;font-size:0.68rem;border:1px solid var(--border);}
+.burger{display:none;background:none;border:none;cursor:pointer;color:var(--text);padding:6px;flex-direction:column;gap:5px;}
+.burger span{display:block;width:20px;height:2px;background:var(--muted);border-radius:2px;transition:all 0.3s;}
+.app{display:flex;padding-top:var(--hh);min-height:100vh;position:relative;z-index:1;}
+.sidebar{width:var(--sw);position:fixed;top:var(--hh);left:0;height:calc(100vh - var(--hh));overflow-y:auto;background:rgba(5,8,16,0.97);border-right:1px solid var(--border);padding:1.25rem 0.65rem;z-index:100;transition:transform 0.3s ease;}
+.sb-label{font-size:0.62rem;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--dim);padding:0 0.65rem;margin-bottom:0.5rem;display:block;margin-top:0.25rem;}
+.sidebar ul{list-style:none;}
+.sidebar li{margin-bottom:2px;}
+.sidebar li[data-t]{display:flex;align-items:center;gap:9px;padding:0.55rem 0.7rem;border-radius:8px;cursor:pointer;transition:all 0.2s;color:var(--muted);font-size:0.815rem;font-weight:500;line-height:1.3;}
+.sidebar li[data-t]:hover{background:rgba(255,255,255,0.04);color:var(--text);}
+.sidebar li[data-t].active{background:rgba(0,229,255,0.07);color:var(--cyan);}
+.num{font-family:var(--mono);font-size:0.62rem;color:var(--dim);min-width:16px;font-weight:400;}
+.sidebar li[data-t].active .num{color:rgba(0,229,255,0.5);}
+.sb-prog{height:2px;background:var(--border);border-radius:1px;margin:0 0.65rem 1.25rem;overflow:hidden;}
+.sb-prog-fill{height:100%;background:linear-gradient(90deg,var(--cyan),var(--violet));border-radius:1px;transition:width 0.4s;width:0%;}
+main{flex:1;margin-left:var(--sw);padding:2.75rem 3.5rem;max-width:980px;}
+.module{display:none;animation:fadeUp 0.38s ease;}
+.module.active{display:block;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:translateY(0);}}
+h1.pt{font-size:2.6rem;font-weight:700;letter-spacing:-1px;line-height:1.15;margin-bottom:0.6rem;background:linear-gradient(135deg,#fff 30%,var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.ps{font-size:1.05rem;color:var(--muted);line-height:1.65;margin-bottom:2.25rem;max-width:580px;}
+h2.st{font-size:1rem;font-weight:600;color:var(--text);margin-bottom:0.875rem;display:flex;align-items:center;gap:8px;}
+h2.st::before{content:'';width:3px;height:16px;background:linear-gradient(var(--cyan),var(--violet));border-radius:2px;flex-shrink:0;}
+h3.ct{font-size:0.95rem;font-weight:600;color:var(--text);margin-bottom:0.4rem;}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1.35rem;transition:border-color 0.2s,transform 0.2s;}
+.card:hover{border-color:rgba(0,229,255,0.1);transform:translateY(-2px);}
+.card p{color:var(--muted);font-size:0.875rem;line-height:1.65;}
+.cg{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:0.875rem;margin-bottom:1.75rem;}
+.c2{display:grid;grid-template-columns:1fr 1fr;gap:0.875rem;margin-bottom:1.75rem;}
+.ca{border-left:3px solid var(--cyan);background:linear-gradient(135deg,rgba(0,229,255,0.04),transparent);}
+.cv{border-left:3px solid var(--violet);background:linear-gradient(135deg,rgba(124,58,237,0.06),transparent);}
+.ct2{border-left:3px solid var(--teal);background:linear-gradient(135deg,rgba(15,212,176,0.06),transparent);}
+.camt{border-left:3px solid var(--amber);background:linear-gradient(135deg,rgba(245,158,11,0.06),transparent);}
+.ipanel{background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden;margin-bottom:1.75rem;}
+.ipanel .ph{padding:1.1rem 1.4rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.pbody{display:grid;grid-template-columns:1fr 1fr;gap:0;}
+.pvis{background:rgba(0,0,0,0.45);display:flex;align-items:center;justify-content:center;min-height:260px;border-right:1px solid var(--border);padding:1rem;overflow:hidden;position:relative;}
+.pctrl{padding:1.4rem;}
+.badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:20px;font-size:0.68rem;font-weight:600;letter-spacing:0.04em;text-transform:uppercase;}
+.bc{background:rgba(0,229,255,0.1);color:var(--cyan);border:1px solid rgba(0,229,255,0.2);}
+.bv{background:rgba(124,58,237,0.1);color:#a78bfa;border:1px solid rgba(124,58,237,0.2);}
+.bt{background:rgba(15,212,176,0.1);color:var(--teal);border:1px solid rgba(15,212,176,0.2);}
+.ba{background:rgba(245,158,11,0.1);color:var(--amber);border:1px solid rgba(245,158,11,0.2);}
+.stats{background:rgba(0,0,0,0.35);border-radius:10px;padding:0.875rem 1.1rem;border-left:3px solid var(--cyan);margin-top:0.875rem;}
+.stats p{font-family:var(--mono);font-size:0.83rem;color:var(--muted);margin:0.25rem 0;display:flex;align-items:baseline;gap:6px;}
+.val{color:var(--cyan);font-size:1.05rem;font-weight:500;}
+input[type=range]{width:100%;-webkit-appearance:none;height:4px;border-radius:2px;background:var(--surface2);outline:none;margin:0.65rem 0;}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:15px;height:15px;border-radius:50%;background:var(--cyan);cursor:pointer;box-shadow:0 0 8px rgba(0,229,255,0.45);}
+input[type=number],input[type=text],select{background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--font);font-size:0.875rem;padding:0.45rem 0.7rem;outline:none;transition:border-color 0.2s;width:100%;}
+input[type=number]:focus,input[type=text]:focus,select:focus{border-color:var(--bh);}
+input[type=number]{width:auto;}
+select option{background:var(--bg2);}
+.fl{display:block;font-size:0.78rem;color:var(--muted);margin-bottom:0.25rem;margin-top:0.65rem;}
+.btn{padding:0.55rem 1.1rem;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--muted);font-family:var(--font);font-size:0.82rem;font-weight:500;cursor:pointer;transition:all 0.2s;}
+.btn:hover{border-color:var(--bh);color:var(--cyan);background:rgba(0,229,255,0.05);}
+.btn.active,.btn-p{background:rgba(0,229,255,0.09);border-color:var(--bh);color:var(--cyan);}
+.br{display:flex;flex-wrap:wrap;gap:0.45rem;margin:0.65rem 0;}
+.vwrap{width:100%;height:460px;background:rgba(0,0,0,0.5);border:1px solid var(--border);border-radius:16px;overflow:hidden;position:relative;margin-bottom:1.4rem;}
+.vwrap canvas{display:block;width:100%!important;height:100%!important;outline:none;}
+.vhint{position:absolute;bottom:0.875rem;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.65);backdrop-filter:blur(10px);border:1px solid var(--border);border-radius:20px;padding:0.35rem 0.75rem;font-size:0.73rem;color:var(--muted);pointer-events:none;}
+.formula{display:inline-flex;align-items:center;background:rgba(124,58,237,0.1);border:1px solid rgba(124,58,237,0.2);border-radius:8px;padding:0.45rem 0.875rem;font-family:var(--mono);font-size:1rem;color:#a78bfa;margin:0.4rem 0;}
+.formula-lg{font-size:1.35rem;padding:0.65rem 1.35rem;display:block;text-align:center;margin:1rem 0;}
+.fgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:0.7rem;margin-top:0.875rem;}
+.fc{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:0.875rem;text-align:center;}
+.fc-name{font-size:0.7rem;color:var(--muted);margin-bottom:0.35rem;text-transform:uppercase;letter-spacing:0.05em;}
+.fc-eq{font-family:var(--mono);font-size:0.95rem;color:#a78bfa;font-weight:500;}
+.sblock{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1.15rem 1.4rem;margin-bottom:0.875rem;transition:border-color 0.2s;}
+.sblock:hover{border-color:rgba(0,229,255,0.1);}
+.sblock h4{font-size:0.9rem;color:var(--text);margin-bottom:0.2rem;}
+.sblock p{color:var(--muted);font-size:0.83rem;margin-bottom:0.65rem;}
+.tabs{display:flex;gap:0.35rem;flex-wrap:wrap;margin-bottom:1.75rem;padding-bottom:1.1rem;border-bottom:1px solid var(--border);}
+.tab-btn{padding:0.4rem 0.8rem;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--muted);font-family:var(--font);font-size:0.78rem;font-weight:500;cursor:pointer;transition:all 0.2s;}
+.tab-btn:hover{color:var(--text);border-color:rgba(255,255,255,0.1);}
+.tab-btn.active{background:rgba(0,229,255,0.08);border-color:var(--bh);color:var(--cyan);}
+.tc{display:none;}.tc.active{display:block;animation:fadeUp 0.3s ease;}
+.tsrow{display:grid;grid-template-columns:repeat(3,1fr);gap:0.7rem;margin-bottom:1rem;}
+.tscard{background:var(--surface2);border-radius:10px;padding:0.8rem;text-align:center;}
+.tscard .tv{font-size:1.6rem;font-weight:700;font-family:var(--mono);color:var(--cyan);line-height:1;}
+.tscard .tl{font-size:0.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-top:0.2rem;}
+.divider{height:1px;background:var(--border);margin:1.75rem 0;}
+.tech-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.35rem;transition:all 0.2s;}
+.tech-card:hover{border-color:rgba(0,229,255,0.12);transform:translateY(-3px);}
+.tech-card .icon{font-size:1.75rem;margin-bottom:0.65rem;display:block;}
+.tech-card h3{font-size:0.95rem;font-weight:600;margin-bottom:0.4rem;}
+.tech-card p{color:var(--muted);font-size:0.875rem;line-height:1.6;}
+.mfooter{display:flex;justify-content:space-between;align-items:center;padding:1.75rem 0 0.5rem;border-top:1px solid var(--border);margin-top:2.5rem;}
+.bnav{display:flex;align-items:center;gap:7px;padding:0.55rem 1.1rem;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--muted);font-family:var(--font);font-size:0.83rem;cursor:pointer;transition:all 0.2s;}
+.bnav:hover{border-color:var(--bh);color:var(--cyan);}
+.abar{height:3px;background:linear-gradient(90deg,var(--cyan),var(--violet),var(--teal));border-radius:2px;margin-bottom:1.75rem;width:48px;}
+#srch-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.8);backdrop-filter:blur(14px);z-index:500;align-items:flex-start;justify-content:center;padding-top:14vh;}
+#srch-overlay.vis{display:flex;}
+#srch-box{width:90%;max-width:540px;background:var(--surface);border:1px solid rgba(0,229,255,0.2);border-radius:16px;padding:1.35rem;}
+#srch-input{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:0.8rem 1rem;font-size:0.95rem;color:var(--text);font-family:var(--font);outline:none;}
+#srch-results{margin-top:0.875rem;}
+.sri{display:flex;align-items:center;gap:9px;padding:0.6rem 0.7rem;border-radius:8px;cursor:pointer;color:var(--muted);font-size:0.85rem;transition:all 0.15s;}
+.sri:hover{background:rgba(0,229,255,0.06);color:var(--cyan);}
+.srch-close{display:block;margin-top:0.65rem;text-align:center;color:var(--dim);font-size:0.75rem;cursor:pointer;}
+#sb-ov{display:none;position:fixed;inset:0;z-index:250;background:rgba(0,0,0,0.5);}
+#sb-ov.vis{display:block;}
+canvas.ic{display:block;max-width:100%;height:auto;}
+@media(max-width:900px){.burger{display:flex;}.topnav{display:none;}.srch-btn{display:none;}.sidebar{transform:translateX(-100%);z-index:300;background:var(--bg2);}.sidebar.open{transform:translateX(0);}main{margin-left:0;padding:2rem 1.25rem;}.pbody{grid-template-columns:1fr;}.pvis{border-right:none;border-bottom:1px solid var(--border);}.c2{grid-template-columns:1fr;}.vwrap{height:300px;}h1.pt{font-size:2rem;}.tsrow{grid-template-columns:1fr 1fr;}}
+@media(max-width:600px){main{padding:1.5rem 0.875rem;}.cg{grid-template-columns:1fr;}.fgrid{grid-template-columns:1fr 1fr;}.tsrow{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+<div id="grid-bg"></div>
+
+<div id="srch-overlay">
+  <div id="srch-box">
+    <input id="srch-input" placeholder="Search topics, formulas, concepts…" autocomplete="off" oninput="doSearch(this.value)">
+    <div id="srch-results"></div>
+    <span class="srch-close" onclick="closeSearch()">Press Esc to close</span>
+  </div>
+</div>
+<div id="sb-ov" onclick="closeSidebar()"></div>
+
+<header>
+  <div class="logo">
+    <div class="logo-icon">G</div>
+    GEO <span class="logo-text">3D</span>
+  </div>
+  <nav class="topnav">
+    <a href="index.html#hero">Home</a>
+    <a href="index.html#solids">Library</a>
+    <a href="index.html#viewer">Viewer</a>
+    <a href="index.html#gallery">Gallery</a>
+    <a href="learn.html" class="active">Learn</a>
+    <a href="math.html">Math</a>
+  </nav>
+  <div class="hdr-right">
+    <button class="srch-btn" onclick="openSearch()">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      Search <kbd>⌘K</kbd>
+    </button>
+    <button class="burger" id="burger" onclick="toggleSidebar()">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</header>
+
+<div class="app">
+<aside class="sidebar" id="sidebar">
+  <span class="sb-label">Progress</span>
+  <div class="sb-prog"><div class="sb-prog-fill" id="prog-fill"></div></div>
+  <span class="sb-label">Encyclopedia</span>
+  <ul id="nav-list">
+    <li data-t="m-intro" class="active"><span class="num">01</span>Introduction</li>
+    <li data-t="m-basics"><span class="num">02</span>Basic Concepts</li>
+    <li data-t="m-angles"><span class="num">03</span>Angles</li>
+    <li data-t="m-lines"><span class="num">04</span>Lines &amp; Relationships</li>
+    <li data-t="m-triangles"><span class="num">05</span>Triangles</li>
+    <li data-t="m-quads"><span class="num">06</span>Quadrilaterals</li>
+    <li data-t="m-polygons"><span class="num">07</span>Polygons</li>
+    <li data-t="m-circles"><span class="num">08</span>Circle Geometry</li>
+    <li data-t="m-coords"><span class="num">09</span>Coordinate Geometry</li>
+    <li data-t="m-mensuration"><span class="num">10</span>Mensuration</li>
+    <li data-t="m-3d"><span class="num">11</span>Three-Dimensional</li>
+    <li data-t="m-advanced"><span class="num">12</span>Transformations</li>
+    <li data-t="m-tech"><span class="num">13</span>Geometry in Tech</li>
+  </ul>
+</aside>
+<main id="content">
+
+<!-- ══ 1. INTRO ══ -->
+<section id="m-intro" class="module active">
+<div class="abar"></div>
+<h1 class="pt">Introduction to<br>Geometry</h1>
+<p class="ps">The mathematical study of shape, size, and spatial relationships — from ancient clay tablets to modern theoretical physics.</p>
+<div class="card ca" style="margin-bottom:1.25rem;">
+<h3 class="ct">What is Geometry?</h3>
+<p>From Ancient Greek <em>geo-</em> "earth" and <em>-metron</em> "measurement", geometry arose across early cultures as a practical way to handle lengths, areas, and volumes. Today it is a vast field underpinning our understanding of the universe — from the curvature of spacetime to the pixels on this screen.</p>
+</div>
+<div class="c2">
+<div class="card cv"><span class="badge bv" style="margin-bottom:0.65rem;">History</span><h3 class="ct">Ancient Roots</h3><p>Around 300 BC, Euclid organised geometric knowledge into "The Elements" — 13 books that remained the definitive textbook for over 2,000 years. Descartes later fused geometry with algebra through coordinate systems.</p></div>
+<div class="card ct2"><span class="badge bt" style="margin-bottom:0.65rem;">Applications</span><h3 class="ct">Everywhere Around Us</h3><p>Architecture, engineering, computer graphics, GPS navigation, robotics, and Einstein's general relativity are all built on geometric principles. Every 3D model on this site is rendered using geometric transformations.</p></div>
+</div>
+<div class="cg" style="margin-top:0;">
+<div class="card"><span class="badge bc" style="margin-bottom:0.5rem;">Branch</span><h3 class="ct">Euclidean</h3><p>Geometry on flat planes. Parallel lines never meet. The geometry of everyday experience.</p></div>
+<div class="card"><span class="badge bv" style="margin-bottom:0.5rem;">Branch</span><h3 class="ct">Non-Euclidean</h3><p>Geometry on curved surfaces where parallel lines can meet or diverge — spherical and hyperbolic geometry.</p></div>
+<div class="card"><span class="badge ba" style="margin-bottom:0.5rem;">Branch</span><h3 class="ct">Analytic</h3><p>Geometry expressed through coordinates and algebraic equations, enabling exact computation of shapes.</p></div>
+<div class="card"><span class="badge bt" style="margin-bottom:0.5rem;">Branch</span><h3 class="ct">Differential</h3><p>Uses calculus to study smooth curves and surfaces. Forms the mathematical backbone of general relativity.</p></div>
+</div>
+<div class="mfooter"><span></span><button class="bnav" onclick="goTo('m-basics')">Basic Concepts →</button></div>
+</section>
+
+<!-- ══ 2. BASICS ══ -->
+<section id="m-basics" class="module">
+<div class="abar"></div>
+<h1 class="pt">Basic Geometric Concepts</h1>
+<p class="ps">The fundamental building blocks from which all shapes, figures, and structures are constructed.</p>
+<div class="ipanel">
+<div class="ph"><h2 class="st" style="margin:0;">Elements of Space</h2><span class="badge bc">Interactive</span></div>
+<div class="pbody">
+<div class="pvis"><canvas role="img" aria-label="Interactive geometry canvas" id="basics-canvas" class="ic" width="300" height="240"></canvas></div>
+<div class="pctrl">
+<h3 class="ct">Primitive Elements</h3>
+<p style="color:var(--muted);font-size:0.875rem;margin-bottom:0.875rem;">Click each element to highlight it on the canvas.</p>
+<div style="display:flex;flex-direction:column;gap:0.4rem;">
+<button class="btn" onclick="hilite('point',this)">⬤ Point — exact location, zero dimensions</button>
+<button class="btn" onclick="hilite('line',this)">— Line — infinite in both directions</button>
+<button class="btn" onclick="hilite('segment',this)">⊢ Segment — bounded by two endpoints</button>
+<button class="btn" onclick="hilite('ray',this)">→ Ray — infinite in one direction</button>
+<button class="btn" onclick="hilite('plane',this)">▣ Plane — infinite 2D surface</button>
+<button class="btn" onclick="hilite('collinear',this)">⚄ Collinear Points — on the same line</button>
+<button class="btn" onclick="hilite('coplanar',this)">⛋ Coplanar Points — on the same plane</button>
+</div>
+<div class="stats"><p>Selected: <span class="val" id="elem-name">—</span></p><p>Dimensions: <span id="elem-dim" style="color:var(--muted);">—</span></p></div>
+</div>
+</div>
+</div>
+<div class="c2">
+<div class="card ca"><h3 class="ct">Collinear Points</h3><p>Three or more points lying on the exact same line. Any two points are always collinear; three or more may or may not be.</p></div>
+<div class="card cv"><h3 class="ct">Coplanar Points</h3><p>Any three non-collinear points define a unique plane. Four or more points are coplanar only if all lie in the same plane.</p></div>
+</div>
+<div class="mfooter"><button class="bnav" onclick="goTo('m-intro')">← Introduction</button><button class="bnav" onclick="goTo('m-angles')">Angles →</button></div>
+</section>
+
+<!-- ══ 3. ANGLES ══ -->
+<section id="m-angles" class="module">
+<div class="abar"></div>
+<h1 class="pt">Angles &amp; Measurement</h1>
+<p class="ps">An angle forms when two rays share a common endpoint called the vertex. Drag the slider to explore every angle type in real time.</p>
+<div class="ipanel">
+<div class="ph"><h2 class="st" style="margin:0;">Angle Explorer</h2><span class="badge bc" id="angle-badge">Acute</span></div>
+<div class="pbody">
+<div class="pvis"><canvas role="img" aria-label="Interactive geometry canvas" id="angle-canvas" class="ic" width="280" height="240"></canvas></div>
+<div class="pctrl">
+<label class="fl">Angle Measure</label>
+<input type="range" id="angle-slider" min="0" max="360" value="45" oninput="updateAngle(this.value)">
+<div class="stats">
+<p>Measure: <span class="val" id="angle-val">45°</span></p>
+<p>Type: <span id="angle-type" style="color:var(--muted);">Acute</span></p>
+<p>Complement: <span id="angle-comp" style="color:var(--muted);">45°</span></p>
+<p>Supplement: <span id="angle-supp" style="color:var(--muted);">135°</span></p>
+</div>
+</div>
+</div>
+</div>
+<div class="cg">
+<div class="card ca"><h3 class="ct">Acute</h3><p>Between 0° and 90°. All angles of an equilateral triangle are acute at exactly 60°.</p></div>
+<div class="card ct2"><h3 class="ct">Right</h3><p>Exactly 90°. Perpendicular lines form right angles. Denoted with a small square symbol at the vertex.</p></div>
+<div class="card cv"><h3 class="ct">Obtuse</h3><p>Between 90° and 180°. Greater than a right angle but less than a straight line.</p></div>
+<div class="card camt"><h3 class="ct">Straight</h3><p>Exactly 180°. Formed when two rays point in exactly opposite directions along the same line.</p></div>
+<div class="card"><h3 class="ct">Reflex</h3><p>Between 180° and 360°. The "major" angle on the other side of the arms.</p></div>
+<div class="card"><h3 class="ct">Complete</h3><p>Exactly 360°. A full rotation back to the exact starting direction.</p></div>
+</div>
+<div class="mfooter"><button class="bnav" onclick="goTo('m-basics')">← Basic Concepts</button><button class="bnav" onclick="goTo('m-lines')">Lines →</button></div>
+</section>
+
+<!-- ══ 4. LINES ══ -->
+<section id="m-lines" class="module">
+<div class="abar"></div>
+<h1 class="pt">Lines &amp; Relationships</h1>
+<p class="ps">How multiple lines interact in two-dimensional space — from perfectly aligned parallels to the rich angle geometry created by a transversal.</p>
+<div class="ipanel">
+<div class="ph"><h2 class="st" style="margin:0;">Line Relationships</h2><span class="badge bt">Interactive</span></div>
+<div class="pbody">
+<div class="pvis"><canvas role="img" aria-label="Interactive geometry canvas" id="lines-canvas" class="ic" width="300" height="240"></canvas></div>
+<div class="pctrl">
+<h3 class="ct">Select Relationship</h3>
+<div class="br">
+<button class="btn active" onclick="setLines('parallel',this)">Parallel</button>
+<button class="btn" onclick="setLines('perp',this)">Perpendicular</button>
+<button class="btn" onclick="setLines('intersect',this)">Intersecting</button>
+<button class="btn" onclick="setLines('transversal',this)">Transversal</button>
+<button class="btn" onclick="setLines('cointerior',this)">Co-interior</button>
+<button class="btn" onclick="setLines('alternate',this)">Alternate</button>
+<button class="btn" onclick="setLines('corresponding',this)">Corresponding</button>
+<button class="btn" onclick="setLines('vertical',this)">Vertically Opposite</button>
+</div>
+<div class="stats"><p style="font-size:0.8rem;line-height:1.6;" id="line-desc">Two lines that never meet, maintaining equal distance at all points. They have identical slopes when expressed in coordinate geometry.</p></div>
+</div>
+</div>
+</div>
+<div class="cg">
+<div class="card ca"><h3 class="ct">Co-interior Angles</h3><p>Between parallel lines on the same side of a transversal. Always supplementary — sum to 180°.</p></div>
+<div class="card cv"><h3 class="ct">Alternate Angles</h3><p>On opposite sides of a transversal between parallel lines. Always equal — the Z-angle pattern.</p></div>
+<div class="card ct2"><h3 class="ct">Corresponding Angles</h3><p>In matching positions when a transversal crosses parallel lines. Always equal — the F-angle pattern.</p></div>
+<div class="card camt"><h3 class="ct">Vertically Opposite</h3><p>Formed across the intersection point of two lines. Always equal — directly proved by straight angle = 180°.</p></div>
+</div>
+<div class="mfooter"><button class="bnav" onclick="goTo('m-angles')">← Angles</button><button class="bnav" onclick="goTo('m-triangles')">Triangles →</button></div>
+</section>
+
+<!-- ══ 5. TRIANGLES ══ -->
+<section id="m-triangles" class="module">
+<div class="abar"></div>
+<h1 class="pt">Triangles</h1>
+<p class="ps">Three-sided polygons and the most structurally stable shape in geometry. The Pythagorean theorem is one of mathematics' most elegant discoveries.</p>
+<div class="ipanel">
+<div class="ph"><h2 class="st" style="margin:0;">Pythagorean Theorem</h2><span class="badge bv">a² + b² = c²</span></div>
+<div class="pbody">
+<div class="pvis"><canvas role="img" aria-label="Interactive geometry canvas" id="pythag-canvas" class="ic" width="280" height="240"></canvas></div>
+<div class="pctrl">
+<p style="color:var(--muted);font-size:0.875rem;margin-bottom:0.875rem;">For any right triangle, the square of the hypotenuse equals the sum of squares of the other two sides.</p>
+<label class="fl" style="color:var(--cyan);">Side a (height) — <span id="pa-val">80</span></label>
+<input type="range" id="pythag-a" min="20" max="140" value="80" oninput="updatePythag()">
+<label class="fl" style="color:#a78bfa;">Side b (base) — <span id="pb-val">60</span></label>
+<input type="range" id="pythag-b" min="20" max="140" value="60" oninput="updatePythag()">
+<div class="stats"><p>a² + b² = <span id="pythag-sum" style="color:var(--muted);">10000</span></p><p>Hypotenuse c: <span class="val" id="pythag-c">100.00</span></p></div>
+</div>
+</div>
+</div>
+
+
+<div class="cg">
+<div class="card ca"><span class="badge bc" style="margin-bottom:0.5rem;">By sides</span><h3 class="ct">Equilateral</h3><p>All three sides equal. All angles are exactly 60°. Perfect 3-fold rotational symmetry.</p></div>
+<div class="card cv"><span class="badge bv" style="margin-bottom:0.5rem;">By sides</span><h3 class="ct">Isosceles</h3><p>Two sides equal. The base angles opposite those sides are always equal to each other.</p></div>
+<div class="card ct2"><span class="badge bt" style="margin-bottom:0.5rem;">By sides</span><h3 class="ct">Scalene</h3><p>No sides equal. All three angles are different. No lines of symmetry exist.</p></div>
+<div class="card"><h3 class="ct">Angle Sum Property</h3><p>In any Euclidean triangle, the interior angles always add to exactly 180°. No exceptions.</p></div>
+</div>
+<div class="mfooter"><button class="bnav" onclick="goTo('m-lines')">← Lines</button><button class="bnav" onclick="goTo('m-quads')">Quadrilaterals →</button></div>
+</section>
+
+<!-- ══ 6. QUADS ══ -->
+<section id="m-quads" class="module">
+<div class="abar"></div>
+<h1 class="pt">Quadrilaterals</h1>
+<p class="ps">Polygons with four edges and four vertices — a rich family with fascinating hierarchical relationships between its members.</p>
+<div class="ipanel">
+<div class="ph"><h2 class="st" style="margin:0;">Area &amp; Perimeter Calculator</h2><span class="badge ba">Live Calculation</span></div>
+<div class="pbody">
+<div class="pvis"><canvas role="img" aria-label="Interactive geometry canvas" id="quad-canvas" class="ic" width="260" height="240"></canvas></div>
+<div class="pctrl">
+<div class="br">
+<button class="btn active" onclick="selectQuad('square',this)">Square</button>
+<button class="btn" onclick="selectQuad('rect',this)">Rectangle</button>
+<button class="btn" onclick="selectQuad('rhombus',this)">Rhombus</button>
+<button class="btn" onclick="selectQuad('para',this)">Parallelogram</button>
+<button class="btn" onclick="selectQuad('trapezium',this)">Trapezium</button>
+<button class="btn" onclick="selectQuad('kite',this)">Kite</button>
+</div>
+<div id="quad-inputs"></div>
+<div class="stats"><p>Area: <span class="val" id="quad-area">—</span></p><p>Perimeter: <span id="quad-perim" style="color:var(--muted);">—</span></p></div>
+</div>
+</div>
+</div>
+<div class="cg">
+<div class="card ca"><h3 class="ct">Square</h3><p>Four equal sides, four right angles. Most symmetric quadrilateral. Area = a².</p></div>
+<div class="card ct2"><h3 class="ct">Rectangle</h3><p>Four right angles, opposite sides equal. Area = l × w.</p></div>
+<div class="card cv"><h3 class="ct">Rhombus</h3><p>Four equal sides, opposite angles equal. Area = ½d₁d₂ (half product of diagonals).</p></div>
+<div class="card camt"><h3 class="ct">Parallelogram</h3><p>Opposite sides parallel and equal. Area = base × perpendicular height.</p></div>
+<div class="card"><h3 class="ct">Trapezium</h3><p>Exactly one pair of parallel sides (trapezoid). Area = ½(a+b)h.</p></div>
+<div class="card"><h3 class="ct">Kite</h3><p>Two pairs of adjacent equal sides. Diagonals perpendicular. Area = ½d₁d₂.</p></div>
+</div>
+<div class="mfooter"><button class="bnav" onclick="goTo('m-triangles')">← Triangles</button><button class="bnav" onclick="goTo('m-polygons')">Polygons →</button></div>
+</section>
+
+<!-- ══ 7. POLYGONS ══ -->
+<section id="m-polygons" class="module">
+<div class="abar"></div>
+<h1 class="pt">Polygons</h1>
+<p class="ps">Closed two-dimensional figures bounded by straight line segments. Drag the slider to explore regular polygons from triangle to dodecagon.</p>
+<div class="ipanel">
+<div class="ph"><h2 class="st" style="margin:0;">Regular Polygon Generator</h2><span class="badge bt">n-gon Explorer</span></div>
+<div class="pbody">
+<div class="pvis"><canvas role="img" aria-label="Interactive geometry canvas" id="poly-canvas" class="ic" width="260" height="240"></canvas></div>
+<div class="pctrl">
+<div class="formula formula-lg">(n − 2) × 180°</div>
+<label class="fl">Number of sides: <span id="poly-n-label">5 — Pentagon</span></label>
+<input type="range" id="poly-slider" min="3" max="12" value="5" oninput="updatePoly(this.value)">
+<div class="stats">
+<p>Sum of angles: <span class="val" id="poly-sum">540°</span></p>
+<p>Each interior angle: <span id="poly-each" style="color:var(--muted);">108°</span></p>
+<p>Each exterior angle: <span id="poly-ext" style="color:var(--muted);">72°</span></p>
+</div>
+</div>
+</div>
+</div>
+<div class="c2">
+<div class="card ca"><h3 class="ct">Convex Polygons</h3><p>All interior angles less than 180°. All vertices point outward. Any segment between two interior points stays fully inside.</p></div>
+<div class="card cv"><h3 class="ct">Concave Polygons</h3><p>At least one interior angle greater than 180°. The polygon "caves in" — a line between two points may exit the boundary.</p></div>
+</div>
+<div class="mfooter"><button class="bnav" onclick="goTo('m-quads')">← Quadrilaterals</button><button class="bnav" onclick="goTo('m-circles')">Circle Geometry →</button></div>
+</section>
+
+<!-- ══ 8. CIRCLES ══ -->
+<section id="m-circles" class="module">
+<div class="abar"></div>
+<h1 class="pt">Circle Geometry</h1>
+<p class="ps">The set of all points equidistant from a central point — a shape of perfect symmetry that appears throughout nature, art, and mathematics.</p>
+<div class="ipanel">
+<div class="ph"><h2 class="st" style="margin:0;">Circle Simulator</h2><span class="badge bc">Adjust radius</span></div>
+<div class="pbody">
+<div class="pvis"><canvas role="img" aria-label="Interactive geometry canvas" id="circle-canvas" class="ic" width="260" height="240"></canvas></div>
+<div class="pctrl">
+<label class="fl">Radius (r): <span id="c-r-val">80</span></label>
+<input type="range" id="circle-r" min="20" max="110" value="80" oninput="updateCircle(this.value)">
+<div class="br">
+<button class="btn active" onclick="setCP('radius',this)">Radius</button>
+<button class="btn" onclick="setCP('chord',this)">Chord</button>
+<button class="btn" onclick="setCP('tangent',this)">Tangent</button>
+<button class="btn" onclick="setCP('sector',this)">Sector</button>
+</div>
+<div class="stats">
+<p>Diameter: <span class="val" id="c-diam">160</span></p>
+<p>Circumference: <span id="c-circ" style="color:var(--muted);">502.65</span></p>
+<p>Area: <span id="c-area" style="color:var(--muted);">20106.19</span></p>
+</div>
+</div>
+</div>
+</div>
+<div class="cg">
+<div class="card ca"><h3 class="ct">Arc</h3><p>A connected portion of a circle's circumference. A minor arc is less than a semicircle; major arc is greater.</p></div>
+<div class="card cv"><h3 class="ct">Sector</h3><p>The region bounded by two radii and an arc — like a slice of pie. Area = ½r²θ (θ in radians).</p></div>
+<div class="card ct2"><h3 class="ct">Segment</h3><p>The region bounded by a chord and an arc. The minor segment is the smaller piece cut off by a chord.</p></div>
+<div class="card camt"><h3 class="ct">Secant</h3><p>An extended line passing through the circle at two distinct points, unlike a tangent which touches at one.</p></div>
+</div>
+<div class="mfooter"><button class="bnav" onclick="goTo('m-polygons')">← Polygons</button><button class="bnav" onclick="goTo('m-coords')">Coordinate Geometry →</button></div>
+</section>
+
+<!-- ══ 9. COORDINATES ══ -->
+<section id="m-coords" class="module">
+<div class="abar"></div>
+<h1 class="pt">Coordinate Geometry</h1>
+<p class="ps">The study of geometry using a coordinate system, bridging algebra and geometry. Input two points to compute their spatial relationship instantly.</p>
+<div class="ipanel">
+<div class="ph"><h2 class="st" style="margin:0;">Cartesian Plane Explorer</h2><span class="badge bc">Plot Points</span></div>
+<div class="pbody">
+<div class="pvis"><canvas role="img" aria-label="Interactive geometry canvas" id="coord-canvas" class="ic" width="280" height="260"></canvas></div>
+<div class="pctrl">
+<div class="c2" style="gap:0.65rem;margin-bottom:0;">
+<div class="card ca" style="padding:0.875rem;">
+<h3 class="ct" style="color:var(--cyan);font-size:0.85rem;">Point A</h3>
+<div style="display:flex;gap:8px;align-items:center;margin-top:0.4rem;">
+<label style="font-size:0.75rem;color:var(--muted);">x:</label>
+<input type="number" id="ax" value="-4" style="width:58px;" oninput="updateCoords()">
+<label style="font-size:0.75rem;color:var(--muted);">y:</label>
+<input type="number" id="ay" value="3" style="width:58px;" oninput="updateCoords()">
+</div>
+</div>
+<div class="card cv" style="padding:0.875rem;">
+<h3 class="ct" style="color:#a78bfa;font-size:0.85rem;">Point B</h3>
+<div style="display:flex;gap:8px;align-items:center;margin-top:0.4rem;">
+<label style="font-size:0.75rem;color:var(--muted);">x:</label>
+<input type="number" id="bx" value="4" style="width:58px;" oninput="updateCoords()">
+<label style="font-size:0.75rem;color:var(--muted);">y:</label>
+<input type="number" id="by" value="-2" style="width:58px;" oninput="updateCoords()">
+</div>
+</div>
+</div>
+<div class="stats" style="margin-top:0.875rem;">
+<p>Distance AB: <span class="val" id="c-dist">10.30</span></p>
+<p>Midpoint: <span id="c-mid" style="color:var(--muted);">(0.0, 0.5)</span></p>
+<p>Gradient m: <span id="c-grad" style="color:var(--muted);">-0.63</span></p>
+<p>Line equation: <span id="c-eq" style="color:var(--muted);font-family:var(--mono);font-size:0.8rem;">y = -0.63x + 0.5</span></p>
+</div>
+</div>
+</div>
+</div>
+<div class="fgrid" style="margin-bottom:1.75rem;">
+<div class="fc"><div class="fc-name">Distance Formula</div><div class="fc-eq">√((x₂-x₁)² + (y₂-y₁)²)</div></div>
+<div class="fc"><div class="fc-name">Midpoint</div><div class="fc-eq">((x₁+x₂)/2, (y₁+y₂)/2)</div></div>
+<div class="fc"><div class="fc-name">Gradient</div><div class="fc-eq">(y₂-y₁) / (x₂-x₁)</div></div>
+<div class="fc"><div class="fc-name">Line Equation</div><div class="fc-eq">y = mx + c</div></div>
+</div>
+<div class="mfooter"><button class="bnav" onclick="goTo('m-circles')">← Circle Geometry</button><button class="bnav" onclick="goTo('m-mensuration')">Mensuration →</button></div>
+</section>
+
+<!-- ══ 10. MENSURATION ══ -->
+<section id="m-mensuration" class="module">
+<div class="abar"></div>
+<h1 class="pt">Mensuration</h1>
+<p class="ps">The branch of mathematics dealing with measurement of length, area, surface area, and volume of geometric figures.</p>
+<div class="tabs">
+<button class="tab-btn active" onclick="setTab('t-mint',this)">Introduction</button>
+<button class="tab-btn" onclick="setTab('t-m2d',this)">2D Shapes</button>
+<button class="tab-btn" onclick="setTab('t-m3d',this)">3D Solids</button>
+<button class="tab-btn" onclick="setTab('t-madv',this)">Advanced Solids</button>
+<button class="tab-btn" onclick="setTab('t-mcalc',this)">Calculator</button>
+<button class="tab-btn" onclick="setTab('t-mlib',this)">Formula Library</button>
+</div>
+
+<div id="t-mint" class="tc active">
+<div class="card ca" style="margin-bottom:1.25rem;"><h3 class="ct">What is Mensuration?</h3><p>Mensuration is the branch of geometry dealing with the measurement of geometric figures. It forms the mathematical foundation for construction, manufacturing, computer graphics, and spatial analysis across all engineering disciplines.</p></div>
+<div class="cg">
+<div class="card ca"><span class="badge bc" style="margin-bottom:0.5rem;">1D</span><h3 class="ct">Perimeter</h3><p>The continuous boundary length of a closed figure. Measured in linear units (cm, m, km).</p></div>
+<div class="card cv"><span class="badge bv" style="margin-bottom:0.5rem;">2D</span><h3 class="ct">Area</h3><p>The extent of a surface region. Measured in square units (cm², m²).</p></div>
+<div class="card ct2"><span class="badge bt" style="margin-bottom:0.5rem;">2D</span><h3 class="ct">Surface Area</h3><p>Total area of all surfaces of a 3D object when unfolded flat. Square units (cm², m²).</p></div>
+<div class="card camt"><span class="badge ba" style="margin-bottom:0.5rem;">3D</span><h3 class="ct">Volume</h3><p>The amount of space enclosed by a 3D object. Cubic units (cm³, m³, litres).</p></div>
+</div>
+<h2 class="st">Real-World Applications</h2>
+<div class="cg">
+<div class="card"><h3 class="ct">Architecture</h3><p>Calculating material quantities — tiles, paint, concrete — for construction projects of any scale.</p></div>
+<div class="card"><h3 class="ct">Engineering</h3><p>Designing parts with precise volumes and fluid capacities; calculating stress distribution across surfaces.</p></div>
+<div class="card"><h3 class="ct">Computer Graphics</h3><p>Bounding boxes, collision detection, and surface shading all rely on mensuration formulas in real time.</p></div>
+<div class="card"><h3 class="ct">Manufacturing</h3><p>Optimising packaging materials and container shapes to minimise material waste and shipping costs.</p></div>
+</div>
+</div>
+
+<div id="t-m2d" class="tc">
+<div class="sblock"><h4 style="color:var(--cyan);">Square</h4><p>A regular quadrilateral with four equal sides and four right angles.</p><div class="fgrid"><div class="fc"><div class="fc-name">Area</div><div class="fc-eq">A = a²</div></div><div class="fc"><div class="fc-name">Perimeter</div><div class="fc-eq">P = 4a</div></div><div class="fc"><div class="fc-name">Diagonal</div><div class="fc-eq">d = a√2</div></div></div></div>
+<div class="sblock"><h4 style="color:#a78bfa;">Rectangle</h4><p>A quadrilateral with four right angles and opposite sides equal in length.</p><div class="fgrid"><div class="fc"><div class="fc-name">Area</div><div class="fc-eq">A = l × w</div></div><div class="fc"><div class="fc-name">Perimeter</div><div class="fc-eq">P = 2(l + w)</div></div><div class="fc"><div class="fc-name">Diagonal</div><div class="fc-eq">d = √(l² + w²)</div></div></div></div>
+<div class="sblock"><h4 style="color:var(--teal);">Triangle</h4><p>A polygon with three edges and three vertices. The simplest closed polygon.</p><div class="fgrid"><div class="fc"><div class="fc-name">Area (base/height)</div><div class="fc-eq">A = ½bh</div></div><div class="fc"><div class="fc-name">Area (Heron's)</div><div class="fc-eq">A = √s(s-a)(s-b)(s-c)</div></div><div class="fc"><div class="fc-name">Perimeter</div><div class="fc-eq">P = a + b + c</div></div></div></div>
+<div class="sblock"><h4 style="color:var(--cyan);">Circle</h4><p>All points in a plane at a given distance from a central point.</p><div class="fgrid"><div class="fc"><div class="fc-name">Area</div><div class="fc-eq">A = πr²</div></div><div class="fc"><div class="fc-name">Circumference</div><div class="fc-eq">C = 2πr</div></div><div class="fc"><div class="fc-name">Diameter</div><div class="fc-eq">d = 2r</div></div></div></div>
+<div class="sblock"><h4 style="color:var(--amber);">Other Quadrilaterals</h4><div class="fgrid"><div class="fc"><div class="fc-name">Parallelogram Area</div><div class="fc-eq">A = b × h</div></div><div class="fc"><div class="fc-name">Rhombus Area</div><div class="fc-eq">A = ½ × d₁ × d₂</div></div><div class="fc"><div class="fc-name">Trapezium Area</div><div class="fc-eq">A = ½(a + b)h</div></div></div></div>
+</div>
+
+<div id="t-m3d" class="tc">
+<div class="sblock"><h4 style="color:var(--cyan);">Cube</h4><p>A regular hexahedron — six equal square faces, all sides equal.</p><div class="fgrid"><div class="fc"><div class="fc-name">Volume</div><div class="fc-eq">V = a³</div></div><div class="fc"><div class="fc-name">Surface Area</div><div class="fc-eq">SA = 6a²</div></div><div class="fc"><div class="fc-name">Space Diagonal</div><div class="fc-eq">d = a√3</div></div></div></div>
+<div class="sblock"><h4 style="color:#a78bfa;">Cuboid</h4><p>A rectangular prism with six rectangular faces. Generalisation of the cube.</p><div class="fgrid"><div class="fc"><div class="fc-name">Volume</div><div class="fc-eq">V = l × w × h</div></div><div class="fc"><div class="fc-name">Surface Area</div><div class="fc-eq">SA = 2(lw + wh + lh)</div></div><div class="fc"><div class="fc-name">Diagonal</div><div class="fc-eq">d = √(l² + w² + h²)</div></div></div></div>
+<div class="sblock"><h4 style="color:var(--teal);">Sphere</h4><p>The set of all points in 3D space equidistant from a centre point.</p><div class="fgrid"><div class="fc"><div class="fc-name">Volume</div><div class="fc-eq">V = ⁴⁄₃πr³</div></div><div class="fc"><div class="fc-name">Surface Area</div><div class="fc-eq">SA = 4πr²</div></div></div></div>
+<div class="sblock"><h4 style="color:var(--amber);">Cylinder</h4><p>Two parallel circular bases connected by a curved surface.</p><div class="fgrid"><div class="fc"><div class="fc-name">Volume</div><div class="fc-eq">V = πr²h</div></div><div class="fc"><div class="fc-name">Curved SA</div><div class="fc-eq">CSA = 2πrh</div></div><div class="fc"><div class="fc-name">Total SA</div><div class="fc-eq">TSA = 2πr(h + r)</div></div></div></div>
+<div class="sblock"><h4 style="color:var(--pink);">Cone</h4><p>A pyramid with a circular base that tapers to an apex.</p><div class="fgrid"><div class="fc"><div class="fc-name">Volume</div><div class="fc-eq">V = ⅓πr²h</div></div><div class="fc"><div class="fc-name">Curved SA</div><div class="fc-eq">CSA = πrl</div></div><div class="fc"><div class="fc-name">Slant Height</div><div class="fc-eq">l = √(r² + h²)</div></div></div></div>
+</div>
+
+<div id="t-madv" class="tc">
+<p class="ps" style="margin-bottom:1.5rem;">The five Platonic Solids — the only perfectly regular convex polyhedra in existence.</p>
+<div class="cg">
+<div class="card ca"><h3 class="ct">Tetrahedron (4 faces)</h3><div class="fgrid" style="grid-template-columns:1fr 1fr;"><div class="fc"><div class="fc-name">Volume</div><div class="fc-eq">a³/(6√2)</div></div><div class="fc"><div class="fc-name">Surface Area</div><div class="fc-eq">a²√3</div></div></div></div>
+<div class="card cv"><h3 class="ct">Hexahedron / Cube (6)</h3><div class="fgrid" style="grid-template-columns:1fr 1fr;"><div class="fc"><div class="fc-name">Volume</div><div class="fc-eq">a³</div></div><div class="fc"><div class="fc-name">Surface Area</div><div class="fc-eq">6a²</div></div></div></div>
+<div class="card ct2"><h3 class="ct">Octahedron (8 faces)</h3><div class="fgrid" style="grid-template-columns:1fr 1fr;"><div class="fc"><div class="fc-name">Volume</div><div class="fc-eq">(√2/3)a³</div></div><div class="fc"><div class="fc-name">Surface Area</div><div class="fc-eq">2a²√3</div></div></div></div>
+<div class="card camt"><h3 class="ct">Dodecahedron (12 faces)</h3><div class="fgrid" style="grid-template-columns:1fr 1fr;"><div class="fc"><div class="fc-name">Volume</div><div class="fc-eq">≈ 7.663a³</div></div><div class="fc"><div class="fc-name">Surface Area</div><div class="fc-eq">≈ 20.645a²</div></div></div></div>
+<div class="card"><h3 class="ct">Icosahedron (20 faces)</h3><div class="fgrid" style="grid-template-columns:1fr 1fr;"><div class="fc"><div class="fc-name">Volume</div><div class="fc-eq">≈ 2.181a³</div></div><div class="fc"><div class="fc-name">Surface Area</div><div class="fc-eq">≈ 8.660a²</div></div></div></div>
+</div>
+</div>
+
+<div id="t-mcalc" class="tc">
+<h2 class="st" style="margin-bottom:1.25rem;">Interactive Calculator</h2>
+<div class="c2" style="gap:1.25rem;">
+<div class="card" style="padding:1.25rem;">
+<label class="fl" style="margin-top:0;">Select Shape</label>
+<select id="calc-shape" onchange="updateCalc()" style="margin-bottom:1rem;">
+<optgroup label="2D Shapes">
+<option value="sq">Square</option>
+<option value="rect">Rectangle</option>
+<option value="para">Parallelogram</option>
+<option value="rhombus">Rhombus</option>
+<option value="trap">Trapezium</option>
+<option value="kite">Kite</option>
+<option value="circ">Circle</option>
+<option value="tri">Triangle (base/height)</option>
+<option value="tri_h">Triangle (Heron's - 3 sides)</option>
+</optgroup>
+<optgroup label="3D Solids">
+<option value="cube">Cube</option>
+<option value="cuboid">Cuboid</option>
+<option value="sph">Sphere</option>
+<option value="cyl">Cylinder</option>
+<option value="cone">Cone</option>
+<option value="tetra">Tetrahedron</option>
+<option value="octa">Octahedron</option>
+<option value="dodeca">Dodecahedron</option>
+<option value="icosa">Icosahedron</option>
+</optgroup>
+</select>
+<div id="calc-inputs"></div>
+</div>
+<div class="card" style="padding:1.25rem;display:flex;flex-direction:column;justify-content:center;">
+<p style="text-align:center;color:var(--muted);font-size:0.8rem;margin-bottom:1rem;text-transform:uppercase;letter-spacing:0.06em;">Results</p>
+<div id="calc-results" class="fgrid" style="grid-template-columns:1fr 1fr;"></div>
+</div>
+</div>
+</div>
+
+<div id="t-mlib" class="tc">
+<div id="formula-filter" style="margin-bottom:1.5rem;"><input id="flib-search" type="text" placeholder="Search formulas… (e.g. area, sphere, perimeter)" oninput="filterFormulas(this.value)"></div>
+<div class="fgrid" id="flib-grid">
+<div class="fc" data-tags="area rectangle"><div class="fc-name">Area — Rectangle</div><div class="fc-eq">A = l × w</div></div>
+<div class="fc" data-tags="area circle"><div class="fc-name">Area — Circle</div><div class="fc-eq">A = πr²</div></div>
+<div class="fc" data-tags="circumference circle perimeter"><div class="fc-name">Circumference</div><div class="fc-eq">C = 2πr</div></div>
+<div class="fc" data-tags="area square"><div class="fc-name">Area — Square</div><div class="fc-eq">A = a²</div></div>
+<div class="fc" data-tags="area triangle"><div class="fc-name">Area — Triangle</div><div class="fc-eq">A = ½bh</div></div>
+<div class="fc" data-tags="area parallelogram"><div class="fc-name">Area — Parallelogram</div><div class="fc-eq">A = bh</div></div>
+<div class="fc" data-tags="area trapezium"><div class="fc-name">Area — Trapezium</div><div class="fc-eq">A = ½(a+b)h</div></div>
+<div class="fc" data-tags="volume cube"><div class="fc-name">Volume — Cube</div><div class="fc-eq">V = a³</div></div>
+<div class="fc" data-tags="volume cuboid"><div class="fc-name">Volume — Cuboid</div><div class="fc-eq">V = lwh</div></div>
+<div class="fc" data-tags="volume sphere"><div class="fc-name">Volume — Sphere</div><div class="fc-eq">V = ⁴⁄₃πr³</div></div>
+<div class="fc" data-tags="surface area sphere"><div class="fc-name">Surface Area — Sphere</div><div class="fc-eq">SA = 4πr²</div></div>
+<div class="fc" data-tags="volume cylinder"><div class="fc-name">Volume — Cylinder</div><div class="fc-eq">V = πr²h</div></div>
+<div class="fc" data-tags="surface area cylinder"><div class="fc-name">Total SA — Cylinder</div><div class="fc-eq">2πr(r+h)</div></div>
+<div class="fc" data-tags="volume cone"><div class="fc-name">Volume — Cone</div><div class="fc-eq">V = ⅓πr²h</div></div>
+<div class="fc" data-tags="surface area cone curved"><div class="fc-name">Curved SA — Cone</div><div class="fc-eq">CSA = πrl</div></div>
+<div class="fc" data-tags="pythagorean theorem triangle"><div class="fc-name">Pythagorean Theorem</div><div class="fc-eq">a² + b² = c²</div></div>
+</div>
+</div>
+
+<div class="mfooter"><button class="bnav" onclick="goTo('m-coords')">← Coordinate Geometry</button><button class="bnav" onclick="goTo('m-3d')">3D Geometry →</button></div>
+</section>
+
+<!-- ══ 11. 3D ══ -->
+<section id="m-3d" class="module">
+<div class="abar"></div>
+<h1 class="pt">Three-Dimensional Geometry</h1>
+<p class="ps">Solid objects that occupy space, characterised by three independent dimensions. Drag to rotate the model below.</p>
+<div class="card" style="padding:1.25rem;margin-bottom:1.4rem;">
+<div style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap;margin-bottom:1.1rem;">
+<div style="flex:1;min-width:180px;">
+<label class="fl" style="margin-top:0;">Solid Type</label>
+<select id="lab-shape" onchange="setLabShape(this.value)">
+<optgroup label="Platonic Solids">
+<option value="tetra">Tetrahedron</option>
+<option value="cube">Cube (Hexahedron)</option>
+<option value="octa">Octahedron</option>
+<option value="dodeca">Dodecahedron</option>
+<option value="icosa">Icosahedron</option>
+</optgroup>
+<optgroup label="Curved Solids">
+<option value="sphere">Sphere</option>
+<option value="cylinder">Cylinder</option>
+<option value="cone">Cone</option>
+<option value="torus">Torus</option>
+</optgroup>
+<optgroup label="Other Polyhedra">
+<option value="prism">Triangular Prism</option>
+<option value="pyramid">Square Pyramid</option>
+</optgroup>
+</select>
+</div>
+<button class="btn" onclick="toggleWireframe()" id="wf-btn">Toggle Wireframe</button>
+<button class="btn" onclick="toggleRotation()" id="rot-btn">Pause Rotation</button>
+</div>
+<div style="display:flex;gap:1.25rem;flex-wrap:wrap;">
+<div class="vwrap" style="flex:2;min-width:260px;height:400px;" id="lab-wrap"><div class="vhint">Drag to rotate • Scroll to zoom</div></div>
+<div style="flex:1;min-width:210px;">
+<h2 class="st">Topological Properties</h2>
+<div class="tsrow">
+<div class="tscard"><div class="tv" id="lab-v">4</div><div class="tl">Vertices</div></div>
+<div class="tscard"><div class="tv" id="lab-e">6</div><div class="tl">Edges</div></div>
+<div class="tscard"><div class="tv" id="lab-f">4</div><div class="tl">Faces</div></div>
+</div>
+<div class="formula" style="display:block;text-align:center;font-size:0.9rem;margin-bottom:1rem;">Euler: V − E + F = 2</div>
+<div class="divider" style="margin:1rem 0;"></div>
+<h2 class="st">Scale Control</h2>
+<label class="fl" style="margin-top:0;">Size: <span id="lab-scale-val">1.5×</span></label>
+<input type="range" id="lab-scale" min="0.5" max="3" step="0.1" value="1.5" oninput="updateLabScale(this.value)">
+<div class="stats" style="margin-top:0.75rem;"><p>Volume ≈ <span class="val" id="lab-vol">0.40</span></p><p>Shape: <span id="lab-name" style="color:var(--muted);">Tetrahedron</span></p></div>
+</div>
+</div>
+</div>
+<div class="c2">
+<div class="card ca"><h3 class="ct">Prisms</h3><p>A polyhedron with two parallel congruent polygon bases connected by rectangular lateral faces. Volume = base area × height.</p></div>
+<div class="card cv"><h3 class="ct">Pyramids</h3><p>A polyhedron with a polygon base and triangular faces meeting at a common apex vertex. Volume = ⅓ × base × height.</p></div>
+</div>
+<div class="mfooter"><button class="bnav" onclick="goTo('m-mensuration')">← Mensuration</button><button class="bnav" onclick="goTo('m-advanced')">Transformations →</button></div>
+</section>
+
+<!-- ══ 12. ADVANCED ══ -->
+<section id="m-advanced" class="module">
+<div class="abar"></div>
+<h1 class="pt">Transformations</h1>
+<p class="ps">Mathematical operations that change the position, size, or orientation of geometric figures while preserving specific properties.</p>
+<div class="ipanel">
+<div class="ph"><h2 class="st" style="margin:0;">Transformation Explorer</h2><span class="badge bc">Interactive</span></div>
+<div class="pbody">
+<div class="pvis"><canvas role="img" aria-label="Interactive geometry canvas" id="trans-canvas" class="ic" width="280" height="240"></canvas></div>
+<div class="pctrl">
+<label class="fl">Translation X (Slide)</label>
+<input type="range" id="trans-x" min="-80" max="80" value="0" oninput="updateTrans()">
+<label class="fl">Translation Y (Slide)</label>
+<input type="range" id="trans-y" min="-60" max="60" value="0" oninput="updateTrans()">
+<label class="fl">Rotation (Turn) — <span id="trans-rot-val">0°</span></label>
+<input type="range" id="trans-rot" min="0" max="360" value="0" oninput="updateTrans()">
+<label class="fl">Scale (Dilation) — <span id="trans-scale-val">1.0×</span></label>
+<input type="range" id="trans-scale" min="0.3" max="3" step="0.1" value="1" oninput="updateTrans()">
+<button class="btn btn-p" onclick="resetTrans()" style="width:100%;margin-top:0.875rem;">Reset All Transformations</button>
+</div>
+</div>
+</div>
+<div class="c2">
+<div class="card ca"><h3 class="ct">Isometric Transformations</h3><p>Transformations that preserve shape and size — translation (slide), rotation (turn), and reflection (flip). Congruent figures result.</p></div>
+<div class="card cv"><h3 class="ct">Non-Isometric Transformations</h3><p>Transformations that change size but preserve shape — enlargement (dilation). Similar figures result, not congruent.</p></div>
+</div>
+<div class="card ct2" style="margin-bottom:1.75rem;">
+<h3 class="ct">Symmetry</h3>
+<p>A figure has line symmetry if it maps onto itself under reflection. Rotational symmetry exists if it maps onto itself under rotation by less than 360°. A circle has infinite lines of symmetry and infinite-order rotational symmetry.</p>
+</div>
+<div class="mfooter"><button class="bnav" onclick="goTo('m-3d')">← 3D Geometry</button><button class="bnav" onclick="goTo('m-tech')">Geometry in Tech →</button></div>
+</section>
+
+<!-- ══ 13. TECH ══ -->
+<section id="m-tech" class="module">
+<div class="abar"></div>
+<h1 class="pt">Geometry in Technology</h1>
+<p class="ps">How ancient mathematical principles drive modern innovation — from pixels on your screen to satellites in orbit.</p>
+<div class="cg" style="grid-template-columns:repeat(auto-fill,minmax(240px,1fr));">
+<div class="tech-card"><span class="icon">🎮</span><h3>Computer Graphics &amp; Games</h3><p>Every 3D game uses mesh geometry, matrix transformations, and projective geometry to render 3D environments onto 2D screens in real time at 60+ frames per second.</p></div>
+<div class="tech-card"><span class="icon">🏗️</span><h3>CAD &amp; Architecture</h3><p>Computer-Aided Design relies on Bézier curves, NURBS splines, and solid modelling to design everything from smartphone cases to skyscrapers with submillimetre precision.</p></div>
+<div class="tech-card"><span class="icon">🤖</span><h3>Robotics &amp; Kinematics</h3><p>Inverse kinematics — calculating joint angles to reach a target position — is built entirely on trigonometry and spatial geometry. Every robotic arm uses it.</p></div>
+<div class="tech-card"><span class="icon">🌐</span><h3>GPS &amp; Navigation</h3><p>Global Positioning Systems use spherical geometry and trilateration to pinpoint your exact location from satellite distances, accounting for Earth's curved surface.</p></div>
+<div class="tech-card"><span class="icon">🧠</span><h3>Machine Learning</h3><p>Neural networks operate in high-dimensional geometric spaces. Concepts like manifold learning, nearest-neighbour search, and attention all use geometric intuition.</p></div>
+<div class="tech-card"><span class="icon">🔬</span><h3>Medical Imaging</h3><p>CT and MRI reconstruction algorithms use Radon transforms and geometric back-projection to build 3D models from 2D cross-sectional scans.</p></div>
+</div>
+<div class="divider"></div>
+<div class="card ca">
+<h3 class="ct">The Geometry of This Website</h3>
+<p>Every 3D solid rendered on this site uses Three.js, which applies rotation matrices, perspective projection, and Phong lighting models — all pure geometry. The 3D viewer above uses quaternion-based camera control derived from spherical geometry. Mathematics is not abstract here — it is running live in your browser.</p>
+</div>
+<div class="mfooter"><button class="bnav" onclick="goTo('m-advanced')">← Transformations</button><span style="color:var(--dim);font-size:0.8rem;">End of Encyclopedia</span></div>
+</section>
+
+</main>
+</div>
+
+
+<script>
+// ══════════════════════════════════════════
+//  NAVIGATION
+// ══════════════════════════════════════════
+const topics = ['m-intro','m-basics','m-angles','m-lines','m-triangles','m-quads','m-polygons','m-circles','m-coords','m-mensuration','m-3d','m-advanced','m-tech'];
+let currentIdx = 0;
+
+function goTo(id){
+  document.querySelectorAll('.module').forEach(m=>m.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.querySelectorAll('#nav-list li[data-t]').forEach(li=>{
+    li.classList.toggle('active', li.dataset.t===id);
+  });
+  currentIdx = topics.indexOf(id);
+  const pct = ((currentIdx+1)/topics.length*100).toFixed(0);
+  document.getElementById('prog-fill').style.width = pct+'%';
+  window.scrollTo(0,0);
+  closeSidebar();
+  initModule(id);
+}
+
+document.querySelectorAll('#nav-list li[data-t]').forEach(li=>{
+  li.addEventListener('click',()=>goTo(li.dataset.t));
+});
+
+// ══════════════════════════════════════════
+//  SIDEBAR MOBILE
+// ══════════════════════════════════════════
+function toggleSidebar(){
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('sb-ov').classList.toggle('vis');
+}
+function closeSidebar(){
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sb-ov').classList.remove('vis');
+}
+
+// ══════════════════════════════════════════
+//  SEARCH
+// ══════════════════════════════════════════
+const searchIndex = [
+  {id:'m-intro',title:'Introduction to Geometry',tags:'history euclidean analytic differential'},
+  {id:'m-basics',title:'Basic Concepts — Points, Lines, Planes',tags:'point line segment ray plane collinear coplanar'},
+  {id:'m-angles',title:'Angles & Measurement',tags:'acute obtuse right reflex straight complete angle degree'},
+  {id:'m-lines',title:'Lines & Relationships',tags:'parallel perpendicular intersecting transversal alternate corresponding'},
+  {id:'m-triangles',title:'Triangles & Pythagorean Theorem',tags:'equilateral isosceles scalene pythagorean a squared b squared hypotenuse'},
+  {id:'m-quads',title:'Quadrilaterals',tags:'square rectangle rhombus parallelogram trapezium kite area perimeter'},
+  {id:'m-polygons',title:'Polygons',tags:'polygon pentagon hexagon heptagon octagon convex concave interior angle'},
+  {id:'m-circles',title:'Circle Geometry',tags:'circle radius diameter circumference arc chord tangent sector segment'},
+  {id:'m-coords',title:'Coordinate Geometry',tags:'cartesian coordinates distance midpoint gradient slope equation'},
+  {id:'m-mensuration',title:'Mensuration — Formulas & Calculators',tags:'area volume surface area perimeter cube sphere cylinder cone mensuration formula'},
+  {id:'m-3d',title:'Three-Dimensional Geometry',tags:'3d solid platonic tetrahedron octahedron dodecahedron icosahedron euler vertices edges faces'},
+  {id:'m-advanced',title:'Transformations',tags:'translation rotation reflection enlargement symmetry dilation isometric'},
+  {id:'m-tech',title:'Geometry in Technology',tags:'graphics games robotics gps machine learning cad computer'}
+];
+
+function openSearch(){
+  document.getElementById('srch-overlay').classList.add('vis');
+  setTimeout(()=>document.getElementById('srch-input').focus(),50);
+}
+function closeSearch(){
+  document.getElementById('srch-overlay').classList.remove('vis');
+  document.getElementById('srch-input').value='';
+  document.getElementById('srch-results').innerHTML='';
+}
+function doSearch(q){
+  const res=document.getElementById('srch-results');
+  if(!q.trim()){res.innerHTML='';return;}
+  const ql=q.toLowerCase();
+  const matches=searchIndex.filter(i=>i.title.toLowerCase().includes(ql)||i.tags.includes(ql));
+  if(!matches.length){res.innerHTML='<div class="sri" style="cursor:default;color:var(--dim);">No results found</div>';return;}
+  res.innerHTML=matches.map(m=>`<div class="sri" onclick="closeSearch();goTo('${m.id}')">↗ ${m.title}</div>`).join('');
+}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeSearch();if((e.metaKey||e.ctrlKey)&&e.key==='k'){e.preventDefault();openSearch();}});
+
+// ══════════════════════════════════════════
+//  CANVAS UTILITIES
+// ══════════════════════════════════════════
+function ctx(id){
+  const c=document.getElementById(id);
+  if(!c)return null;
+  const r=c.getBoundingClientRect();
+  // Always reset canvas dimensions to clear accumulated state
+  const pw = r.width > 0 ? r.width : (c.offsetParent ? c.offsetParent.clientWidth : 280);
+  c.width = Math.round(pw) * 2;
+  c.height = Math.round(r.height > 0 ? r.height : 240) * 2;
+  const x=c.getContext('2d');
+  x.setTransform(2,0,0,2,0,0);
+  return {ctx:x,w:c.width/2,h:c.height/2,canvas:c};
+}
+
+const C = {
+  cyan:'#00e5ff', violet:'#a78bfa', teal:'#0fd4b0',
+  amber:'#f59e0b', pink:'#f472b6', dim:'rgba(255,255,255,0.06)',
+  muted:'#7a8ab0', text:'#f0f4ff'
+};
+
+// ══════════════════════════════════════════
+//  2. BASICS CANVAS
+// ══════════════════════════════════════════
+let basicsHighlight='';
+function hilite(what, btn){
+  basicsHighlight=what;
+  document.querySelectorAll('#m-basics .btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  const names={point:'Point',line:'Line',segment:'Line Segment',ray:'Ray',plane:'Plane',collinear:'Collinear Points',coplanar:'Coplanar Points'};
+  const dims={point:'0 dimensions',line:'1 dimension (infinite)',segment:'1 dimension (finite)',ray:'1 dimension (semi-infinite)',plane:'2 dimensions (infinite)',collinear:'1 dimension (shared line)',coplanar:'2 dimensions (shared plane)'};
+  document.getElementById('elem-name').textContent=names[what];
+  document.getElementById('elem-dim').textContent=dims[what];
+  drawBasics();
+}
+function drawBasics(){
+  const c=ctx('basics-canvas');if(!c)return;
+  const {ctx:x,w,h}=c;
+  x.clearRect(0,0,w,h);
+  // Grid
+  x.strokeStyle='rgba(255,255,255,0.03)';x.lineWidth=1;
+  for(let i=0;i<=w;i+=20){x.beginPath();x.moveTo(i,0);x.lineTo(i,h);x.stroke();}
+  for(let i=0;i<=h;i+=20){x.beginPath();x.moveTo(0,i);x.lineTo(w,i);x.stroke();}
+  // Plane (background)
+  if(basicsHighlight==='plane'||basicsHighlight==='coplanar'){
+    x.fillStyle='rgba(0,229,255,0.06)';x.fillRect(20,20,w-40,h-40);
+    x.strokeStyle=basicsHighlight==='coplanar'?C.teal:C.cyan;
+    x.lineWidth=1.5;x.strokeRect(20,20,w-40,h-40);
+  }
+  // Line
+  const lCol = (basicsHighlight==='line'||basicsHighlight==='collinear') ? C.cyan : 'rgba(255,255,255,0.12)';
+  x.strokeStyle=lCol;x.lineWidth=(basicsHighlight==='line'||basicsHighlight==='collinear')?2:1;
+  x.setLineDash([4,4]);x.beginPath();x.moveTo(0,h*0.38);x.lineTo(w,h*0.38);x.stroke();x.setLineDash([]);
+  // Segment
+  const sCol = basicsHighlight==='segment' ? C.teal : 'rgba(255,255,255,0.2)';
+  x.strokeStyle=sCol;x.lineWidth=basicsHighlight==='segment'?2.5:1.5;
+  x.beginPath();x.moveTo(w*0.2,h*0.6);x.lineTo(w*0.8,h*0.6);x.stroke();
+  // Segment endpoints
+  [w*0.2,w*0.8].forEach(px=>{
+    x.beginPath();x.arc(px,h*0.6,3.5,0,Math.PI*2);
+    x.fillStyle=basicsHighlight==='segment'?C.teal:'rgba(255,255,255,0.3)';x.fill();
+  });
+  // Ray
+  const rCol=basicsHighlight==='ray'?C.amber:'rgba(255,255,255,0.15)';
+  x.strokeStyle=rCol;x.lineWidth=basicsHighlight==='ray'?2:1;
+  x.beginPath();x.moveTo(w*0.3,h*0.78);x.lineTo(w,h*0.78);x.stroke();
+  // Arrowhead
+  x.fillStyle=rCol;x.beginPath();x.moveTo(w-2,h*0.78-4);x.lineTo(w+6,h*0.78);x.lineTo(w-2,h*0.78+4);x.closePath();x.fill();
+  // Ray start point
+  x.beginPath();x.arc(w*0.3,h*0.78,3.5,0,Math.PI*2);x.fill();
+  // Points
+  const pts= basicsHighlight==='collinear' ? [[w*0.2,h*0.38],[w*0.5,h*0.38],[w*0.8,h*0.38]] : (basicsHighlight==='coplanar' ? [[w*0.3,h*0.3],[w*0.6,h*0.4],[w*0.4,h*0.7]] : [[w*0.25,h*0.25],[w*0.5,h*0.22],[w*0.72,h*0.28]]);
+  pts.forEach(([px,py])=>{
+    x.beginPath();x.arc(px,py,(basicsHighlight==='point'||basicsHighlight==='collinear'||basicsHighlight==='coplanar')?5:3.5,0,Math.PI*2);
+    x.fillStyle=(basicsHighlight==='point'||basicsHighlight==='collinear'||basicsHighlight==='coplanar')?C.cyan:'rgba(255,255,255,0.4)';x.fill();
+    if(basicsHighlight==='point'||basicsHighlight==='collinear'||basicsHighlight==='coplanar'){x.strokeStyle='rgba(0,229,255,0.3)';x.lineWidth=1;x.beginPath();x.arc(px,py,9,0,Math.PI*2);x.stroke();}
+  });
+  // Labels
+  x.font='11px Space Grotesk,sans-serif';x.fillStyle=C.muted;
+  x.fillText('Line (infinite)',4,h*0.33);
+  x.fillText('Segment',w*0.28,h*0.55);
+  x.fillText('Ray',w*0.32,h*0.74);
+  x.fillText('Points',w*0.18,h*0.2);
+}
+setTimeout(drawBasics,300);
+
+// ══════════════════════════════════════════
+//  3. ANGLE CANVAS
+// ══════════════════════════════════════════
+let angleDeg=45;
+function updateAngle(v){
+  angleDeg=parseInt(v);
+  let type;
+  if(angleDeg===0)type='Zero';
+  else if(angleDeg<90)type='Acute';
+  else if(angleDeg===90)type='Right';
+  else if(angleDeg<180)type='Obtuse';
+  else if(angleDeg===180)type='Straight';
+  else if(angleDeg<360)type='Reflex';
+  else type='Complete';
+  const colors={Zero:C.muted,Acute:C.teal,Right:C.cyan,Obtuse:C.violet,Straight:C.amber,Reflex:C.pink,Complete:'#fff'};
+  document.getElementById('angle-val').textContent=v+'°';
+  document.getElementById('angle-type').textContent=type;
+  document.getElementById('angle-type').style.color=colors[type]||C.muted;
+  document.getElementById('angle-badge').textContent=type;
+  const comp = angleDeg<=90 ? (90-angleDeg)+'°' : 'N/A';
+  const supp = angleDeg<=180 ? (180-angleDeg)+'°' : 'N/A';
+  document.getElementById('angle-comp').textContent=comp;
+  document.getElementById('angle-supp').textContent=supp;
+  drawAngle();
+}
+function drawAngle(){
+  const c=ctx('angle-canvas');if(!c)return;
+  const {ctx:x,w,h}=c;
+  x.clearRect(0,0,w,h);
+  const cx=w*0.5,cy=h*0.65,len=Math.min(w,h)*0.42;
+  const rad=angleDeg*Math.PI/180;
+  const arcColor=angleDeg===0?C.muted:angleDeg<90?C.teal:angleDeg===90?C.cyan:angleDeg<180?C.violet:angleDeg===180?C.amber:angleDeg<360?C.pink:'#fff';
+  if(angleDeg===0){
+    x.strokeStyle=C.text;x.lineWidth=2;
+    x.beginPath();x.moveTo(cx,cy);x.lineTo(cx+len,cy);x.stroke();
+    x.beginPath();x.arc(cx,cy,4,0,Math.PI*2);x.fillStyle=C.cyan;x.fill();
+    x.font='bold 13px Space Grotesk,sans-serif';x.fillStyle=C.muted;
+    x.textAlign='center';x.textBaseline='middle';
+    x.fillText('0° — Zero angle',cx,cy-len*0.35);
+    x.textAlign='start';x.textBaseline='alphabetic';
+    return;
+  }
+  if(angleDeg===360){
+    x.beginPath();x.arc(cx,cy,len*0.45,0,Math.PI*2);
+    x.fillStyle=arcColor+'22';x.fill();
+    x.strokeStyle=arcColor;x.lineWidth=1.5;x.stroke();
+    x.strokeStyle=C.text;x.lineWidth=2;
+    x.beginPath();x.moveTo(cx,cy);x.lineTo(cx+len,cy);x.stroke();
+    x.beginPath();x.arc(cx,cy,4,0,Math.PI*2);x.fillStyle=C.cyan;x.fill();
+    x.font='bold 14px Space Grotesk,sans-serif';x.fillStyle=arcColor;
+    x.textAlign='center';x.textBaseline='middle';
+    x.fillText('360°',cx,cy-len*0.35);
+    x.textAlign='start';x.textBaseline='alphabetic';
+    return;
+  }
+  x.beginPath();x.moveTo(cx,cy);x.arc(cx,cy,len*0.45,0,-rad,true);x.closePath();
+  x.fillStyle=arcColor+'22';x.fill();
+  x.strokeStyle=arcColor;x.lineWidth=1.5;
+  x.beginPath();x.arc(cx,cy,len*0.45,0,-rad,true);x.stroke();
+  // Right angle marker
+  if(angleDeg===90){
+    x.strokeStyle=C.cyan;x.lineWidth=1.5;
+    x.beginPath();x.moveTo(cx+18,cy);x.lineTo(cx+18,cy-18);x.lineTo(cx,cy-18);x.stroke();
+  }
+  // Ray 1 (horizontal)
+  x.strokeStyle=C.text;x.lineWidth=2;
+  x.beginPath();x.moveTo(cx,cy);x.lineTo(cx+len,cy);x.stroke();
+  // Ray 2
+  x.beginPath();x.moveTo(cx,cy);x.lineTo(cx+len*Math.cos(-rad),cy+len*Math.sin(-rad));x.stroke();
+  // Vertex dot
+  x.beginPath();x.arc(cx,cy,4,0,Math.PI*2);x.fillStyle=C.cyan;x.fill();
+  // Degree label
+  const midA=-rad/2;
+  const lx=cx+len*0.35*Math.cos(midA), ly=cy+len*0.35*Math.sin(midA);
+  x.font='bold 14px Space Grotesk,sans-serif';
+  x.fillStyle=arcColor;x.textAlign='center';x.textBaseline='middle';
+  x.fillText(angleDeg+'°',lx,ly);
+  x.textAlign='start';x.textBaseline='alphabetic';
+}
+setTimeout(()=>drawAngle(),300);
+
+// ══════════════════════════════════════════
+//  4. LINES CANVAS
+// ══════════════════════════════════════════
+let lineMode='parallel';
+const lineDescs={
+  parallel:'Two lines that never meet, maintaining equal distance at all points. Identical slopes in coordinate geometry.',
+  perp:'Two lines that intersect at exactly 90°. Their slopes are negative reciprocals: m₁ × m₂ = −1.',
+  intersect:'Two lines that cross at a single point. They create two pairs of vertically opposite angles at the intersection.',
+  transversal:'A line crossing two or more parallel lines, creating corresponding, alternate, and co-interior angle pairs.',
+  cointerior:'Co-interior (same-side interior) angles lie between parallel lines on the same side of a transversal. They are always supplementary — they sum to 180°.',
+  alternate:'Alternate angles lie on opposite sides of a transversal between two parallel lines. They are always equal — forming the Z-angle pattern.',
+  corresponding:'Corresponding angles are in matching positions when a transversal crosses parallel lines. They are always equal — forming the F-angle pattern.',
+  vertical:'Vertically opposite angles form across the intersection of two lines. They are always equal — proven by the straight angle (180°) property.'
+};
+function setLines(mode,btn){
+  lineMode=mode;
+  document.querySelectorAll('#m-lines .btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('line-desc').textContent=lineDescs[mode];
+  drawLines();
+}
+function drawLines(){
+  const c=ctx('lines-canvas');if(!c)return;
+  const {ctx:x,w,h}=c;
+  x.clearRect(0,0,w,h);
+  x.strokeStyle=C.cyan;x.lineWidth=2;
+  if(lineMode==='parallel'){
+    [[h*0.3],[h*0.7]].forEach(([y])=>{x.beginPath();x.moveTo(20,y);x.lineTo(w-20,y);x.stroke();});
+    x.strokeStyle=C.muted;x.lineWidth=0.8;x.setLineDash([3,4]);
+    for(let i=40;i<w-20;i+=35){x.beginPath();x.moveTo(i,h*0.3);x.lineTo(i,h*0.7);x.stroke();}
+    x.setLineDash([]);
+    x.fillStyle=C.muted;x.font='11px Space Grotesk,sans-serif';
+    x.fillText('Equal spacing',w*0.35,h*0.5+4);
+  }else if(lineMode==='perp'){
+    const cx=w/2,cy=h/2;
+    x.beginPath();x.moveTo(20,cy);x.lineTo(w-20,cy);x.stroke();
+    x.strokeStyle=C.violet;
+    x.beginPath();x.moveTo(cx,15);x.lineTo(cx,h-15);x.stroke();
+    x.strokeStyle=C.teal;x.lineWidth=1.5;
+    x.beginPath();x.moveTo(cx+14,cy);x.lineTo(cx+14,cy-14);x.lineTo(cx,cy-14);x.stroke();
+    x.fillStyle=C.cyan;x.beginPath();x.arc(cx,cy,4,0,Math.PI*2);x.fill();
+    x.fillStyle=C.muted;x.font='11px Space Grotesk,sans-serif';x.fillText('90°',cx+18,cy-5);
+  }else if(lineMode==='intersect'){
+    const cx=w*0.52,cy=h*0.5;
+    x.beginPath();x.moveTo(25,h*0.25);x.lineTo(w-20,h*0.72);x.stroke();
+    x.strokeStyle=C.violet;
+    x.beginPath();x.moveTo(w-20,h*0.25);x.lineTo(20,h*0.72);x.stroke();
+    x.fillStyle=C.cyan;x.beginPath();x.arc(cx,cy,4.5,0,Math.PI*2);x.fill();
+    x.strokeStyle='rgba(0,229,255,0.3)';x.lineWidth=1;x.beginPath();x.arc(cx,cy,18,0,Math.PI*2);x.stroke();
+  }else if(lineMode==='vertical'){
+    const cx=w*0.52,cy=h*0.5;
+    x.beginPath();x.moveTo(25,h*0.25);x.lineTo(w-20,h*0.72);x.stroke();
+    x.strokeStyle=C.violet;
+    x.beginPath();x.moveTo(w-20,h*0.25);x.lineTo(20,h*0.72);x.stroke();
+    x.fillStyle=C.cyan;x.beginPath();x.arc(cx,cy,4.5,0,Math.PI*2);x.fill();
+    x.strokeStyle='rgba(0,229,255,0.8)';x.fillStyle='rgba(0,229,255,0.2)';x.lineWidth=2;
+    x.beginPath();x.moveTo(cx,cy);x.arc(cx,cy,20,-0.6,0.5);x.closePath();x.fill();x.stroke();
+    x.beginPath();x.moveTo(cx,cy);x.arc(cx,cy,20,Math.PI-0.6,Math.PI+0.5);x.closePath();x.fill();x.stroke();
+  }else if(lineMode==='transversal' || lineMode==='cointerior' || lineMode==='alternate' || lineMode==='corresponding'){
+    [[h*0.3],[h*0.68]].forEach(([y])=>{x.beginPath();x.moveTo(15,y);x.lineTo(w-15,y);x.stroke();});
+    x.strokeStyle=C.amber;x.lineWidth=2.5;
+    x.beginPath();x.moveTo(w*0.32,10);x.lineTo(w*0.68,h-10);x.stroke();
+    const ix1=w*0.37,iy1=h*0.3,ix2=w*0.54,iy2=h*0.68;
+    x.fillStyle=C.amber;[{x:ix1,y:iy1},{x:ix2,y:iy2}].forEach(p=>{x.beginPath();x.arc(p.x,p.y,4,0,Math.PI*2);x.fill();});
+    
+    // Angle arcs
+    x.strokeStyle='rgba(0,229,255,0.8)';x.lineWidth=2;x.fillStyle='rgba(0,229,255,0.2)';
+    if(lineMode==='cointerior'){
+      x.beginPath();x.moveTo(ix1,iy1);x.arc(ix1,iy1,18,0.2,Math.PI);x.closePath();x.fill();x.stroke();
+      x.strokeStyle='rgba(167,139,250,0.8)';x.fillStyle='rgba(167,139,250,0.2)';
+      x.beginPath();x.moveTo(ix2,iy2);x.arc(ix2,iy2,18,Math.PI,Math.PI+0.2);x.closePath();x.fill();x.stroke();
+    }else if(lineMode==='alternate'){
+      x.beginPath();x.moveTo(ix1,iy1);x.arc(ix1,iy1,18,0.2,Math.PI);x.closePath();x.fill();x.stroke();
+      x.beginPath();x.moveTo(ix2,iy2);x.arc(ix2,iy2,18,0.2+Math.PI,Math.PI*2);x.closePath();x.fill();x.stroke();
+    }else if(lineMode==='corresponding'){
+      x.beginPath();x.moveTo(ix1,iy1);x.arc(ix1,iy1,18,0.2,Math.PI);x.closePath();x.fill();x.stroke();
+      x.beginPath();x.moveTo(ix2,iy2);x.arc(ix2,iy2,18,0.2,Math.PI);x.closePath();x.fill();x.stroke();
+    }else{
+      x.strokeStyle='rgba(0,229,255,0.5)';x.fillStyle='transparent';x.lineWidth=1;
+      x.beginPath();x.arc(ix1,iy1,14,0.2,1.2);x.stroke();
+      x.strokeStyle='rgba(167,139,250,0.5)';
+      x.beginPath();x.arc(ix2,iy2,14,0.2+Math.PI,1.2+Math.PI);x.stroke();
+    }
+  }
+}
+setTimeout(()=>drawLines(),300);
+
+// ══════════════════════════════════════════
+//  5. PYTHAG CANVAS
+// ══════════════════════════════════════════
+function updatePythag(){
+  const a=parseInt(document.getElementById('pythag-a').value);
+  const b=parseInt(document.getElementById('pythag-b').value);
+  document.getElementById('pa-val').textContent=a;
+  document.getElementById('pb-val').textContent=b;
+  const c=Math.sqrt(a*a+b*b);
+  document.getElementById('pythag-sum').textContent=`${a}² + ${b}² = ${a*a+b*b}`;
+  document.getElementById('pythag-c').textContent=c.toFixed(2);
+  drawPythag(a,b,c);
+}
+function drawPythag(a,b,c){
+  const el=ctx('pythag-canvas');if(!el)return;
+  const {ctx:x,w,h}=el;
+  x.clearRect(0,0,w,h);
+  const scale=Math.min((h-40)/a,(w-40)/b,1.2);
+  const sa=a*scale,sb=b*scale;
+  const ox=(w-sb)/2,oy=(h-sa)/2;
+  // Squares
+  x.fillStyle='rgba(0,229,255,0.07)';x.fillRect(ox-sa,oy,sa,sa);
+  x.strokeStyle=C.cyan;x.lineWidth=1;x.strokeRect(ox-sa,oy,sa,sa);
+  x.fillStyle='rgba(167,139,250,0.07)';x.fillRect(ox,oy+sa,sb,sa);
+  x.strokeStyle=C.violet;x.strokeRect(ox,oy+sa,sb,sa);
+  // Triangle
+  x.strokeStyle=C.text;x.lineWidth=2.5;x.fillStyle='rgba(15,212,176,0.08)';
+  x.beginPath();x.moveTo(ox,oy);x.lineTo(ox,oy+sa);x.lineTo(ox+sb,oy+sa);x.closePath();x.fill();x.stroke();
+  // Right angle
+  x.strokeStyle=C.teal;x.lineWidth=1.5;
+  x.beginPath();x.moveTo(ox+12,oy+sa);x.lineTo(ox+12,oy+sa-12);x.lineTo(ox,oy+sa-12);x.stroke();
+  // Labels
+  x.font='bold 12px Space Grotesk,sans-serif';x.fillStyle=C.cyan;x.textAlign='center';
+  x.fillText('a',ox-sa/2,oy+sa/2);
+  x.fillStyle=C.violet;x.fillText('b',ox+sb/2,oy+sa+sa/2);
+  // Hypotenuse label
+  const mx=(ox+ox+sb)/2,my=(oy+oy+sa)/2;
+  x.fillStyle=C.teal;
+  x.save();x.translate(mx+8,my-8);x.rotate(-Math.atan2(sa,sb));x.fillText('c',0,0);x.restore();
+  x.textAlign='start';
+}
+setTimeout(updatePythag,300);
+
+// ══════════════════════════════════════════
+//  5.5. TRIANGLE TYPE CANVAS
+// ══════════════════════════════════════════
+
+
+// ══════════════════════════════════════════
+//  6. QUAD CANVAS
+// ══════════════════════════════════════════
+let quadMode='square';
+function selectQuad(mode,btn){
+  quadMode=mode;
+  document.querySelectorAll('#m-quads .btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  const qi=document.getElementById('quad-inputs');
+  if(mode==='square'){
+    qi.innerHTML='<label class="fl">Side (a): <span id="q-a-val">80</span></label><input type="range" id="q-a" min="20" max="150" value="80" oninput="calcQuad()">';
+  }else if(mode==='rect'){
+    qi.innerHTML='<label class="fl">Length (l): <span id="q-l-val">100</span></label><input type="range" id="q-l" min="20" max="160" value="100" oninput="calcQuad()"><label class="fl">Width (w): <span id="q-w-val">60</span></label><input type="range" id="q-w" min="20" max="120" value="60" oninput="calcQuad()">';
+  }else if(mode==='rhombus'){
+    qi.innerHTML='<label class="fl">Diagonal 1 (d1): <span id="q-d1-val">100</span></label><input type="range" id="q-d1" min="40" max="160" value="100" oninput="calcQuad()"><label class="fl">Diagonal 2 (d2): <span id="q-d2-val">60</span></label><input type="range" id="q-d2" min="40" max="160" value="60" oninput="calcQuad()">';
+  }else if(mode==='trapezium'){
+    qi.innerHTML='<label class="fl">Top Base (a): <span id="q-ta-val">60</span></label><input type="range" id="q-ta" min="20" max="120" value="60" oninput="calcQuad()"><label class="fl">Bottom Base (b): <span id="q-tb-val">100</span></label><input type="range" id="q-tb" min="40" max="160" value="100" oninput="calcQuad()"><label class="fl">Height (h): <span id="q-th-val">60</span></label><input type="range" id="q-th" min="20" max="120" value="60" oninput="calcQuad()">';
+  }else if(mode==='kite'){
+    qi.innerHTML='<label class="fl">Vertical Diagonal (d1): <span id="q-d1-val">120</span></label><input type="range" id="q-d1" min="40" max="160" value="120" oninput="calcQuad()"><label class="fl">Horizontal Diagonal (d2): <span id="q-d2-val">80</span></label><input type="range" id="q-d2" min="40" max="160" value="80" oninput="calcQuad()"><label class="fl">Cross Point (%): <span id="q-cross-val">30%</span></label><input type="range" id="q-cross" min="10" max="90" value="30" oninput="calcQuad()">';
+  }else{
+    qi.innerHTML='<label class="fl">Base (b): <span id="q-b-val">100</span></label><input type="range" id="q-b" min="20" max="160" value="100" oninput="calcQuad()"><label class="fl">Height (h): <span id="q-h-val">60</span></label><input type="range" id="q-h" min="20" max="120" value="60" oninput="calcQuad()">';
+  }
+  calcQuad();
+}
+function calcQuad(){
+  let area,perim,params={};
+  if(quadMode==='square'){
+    const a=parseInt(document.getElementById('q-a').value);
+    document.getElementById('q-a-val').textContent=a;
+    area=a*a;perim=4*a;params={type:'square',a};
+  }else if(quadMode==='rect'){
+    const l=parseInt(document.getElementById('q-l').value);
+    const w=parseInt(document.getElementById('q-w').value);
+    document.getElementById('q-l-val').textContent=l;
+    document.getElementById('q-w-val').textContent=w;
+    area=l*w;perim=2*(l+w);params={type:'rect',l,w};
+  }else if(quadMode==='rhombus'){
+    const d1=parseInt(document.getElementById('q-d1').value);
+    const d2=parseInt(document.getElementById('q-d2').value);
+    document.getElementById('q-d1-val').textContent=d1;
+    document.getElementById('q-d2-val').textContent=d2;
+    area=(d1*d2)/2;
+    const side=Math.sqrt((d1/2)**2 + (d2/2)**2);
+    perim=4*side;params={type:'rhombus',d1,d2};
+  }else if(quadMode==='trapezium'){
+    const a=parseInt(document.getElementById('q-ta').value);
+    const b=parseInt(document.getElementById('q-tb').value);
+    const h=parseInt(document.getElementById('q-th').value);
+    document.getElementById('q-ta-val').textContent=a;
+    document.getElementById('q-tb-val').textContent=b;
+    document.getElementById('q-th-val').textContent=h;
+    area=((a+b)/2)*h;
+    const diff=(b-a)/2;
+    const side=Math.sqrt(diff*diff+h*h);
+    perim=a+b+2*side;params={type:'trapezium',a,b,h};
+  }else if(quadMode==='kite'){
+    const d1=parseInt(document.getElementById('q-d1').value);
+    const d2=parseInt(document.getElementById('q-d2').value);
+    const cross=parseInt(document.getElementById('q-cross').value);
+    document.getElementById('q-d1-val').textContent=d1;
+    document.getElementById('q-d2-val').textContent=d2;
+    document.getElementById('q-cross-val').textContent=cross+'%';
+    area=(d1*d2)/2;
+    const h1 = d1 * (cross / 100);
+    const h2 = d1 - h1;
+    const sideA = Math.sqrt(h1**2 + (d2/2)**2);
+    const sideB = Math.sqrt(h2**2 + (d2/2)**2);
+    perim = 2*sideA + 2*sideB;
+    params={type:'kite',d1,d2,cross,sideA,sideB};
+  }else{
+    const b=parseInt(document.getElementById('q-b').value);
+    const h=parseInt(document.getElementById('q-h').value);
+    document.getElementById('q-b-val').textContent=b;
+    document.getElementById('q-h-val').textContent=h;
+    area=b*h;perim=2*(b+Math.sqrt(b*b+h*h));params={type:'para',b,h};
+  }
+  document.getElementById('quad-area').textContent=area.toFixed(0)+' u²';
+  document.getElementById('quad-perim').textContent=perim.toFixed(1)+' u';
+  drawQuad(params);
+}
+function drawQuad(p){
+  const el=ctx('quad-canvas');if(!el)return;
+  const {ctx:x,w,h}=el;
+  x.clearRect(0,0,w,h);
+  const pad=25;
+  x.strokeStyle=C.cyan;x.lineWidth=2;x.fillStyle='rgba(0,229,255,0.07)';
+  if(p.type==='square'){
+    const s=Math.min(w-pad*2,h-pad*2,p.a*1.2);
+    const ox=(w-s)/2,oy=(h-s)/2;
+    x.fillRect(ox,oy,s,s);x.strokeRect(ox,oy,s,s);
+    // dimension lines
+    x.strokeStyle=C.muted;x.lineWidth=0.8;x.fillStyle=C.muted;x.font='11px Space Grotesk,sans-serif';x.textAlign='center';
+    x.fillText('a = '+p.a,w/2,oy+s+16);
+  }else if(p.type==='rect'){
+    const maxW=w-pad*2,maxH=h-pad*2;
+    const scale=Math.min(maxW/p.l,maxH/p.w);
+    const rw=p.l*scale,rh=p.w*scale;
+    const ox=(w-rw)/2,oy=(h-rh)/2;
+    x.fillRect(ox,oy,rw,rh);x.strokeRect(ox,oy,rw,rh);
+    x.fillStyle=C.muted;x.font='11px Space Grotesk,sans-serif';x.textAlign='center';
+    x.fillText('l = '+p.l,w/2,oy+rh+15);
+    x.textAlign='right';x.fillText('w = '+p.w,ox-5,oy+rh/2+4);
+  }else if(p.type==='rhombus'){
+    const maxW=w-pad*2,maxH=h-pad*2;
+    const scale=Math.min(maxW/p.d1,maxH/p.d2);
+    const d1=p.d1*scale,d2=p.d2*scale;
+    const ox=w/2,oy=h/2;
+    x.beginPath();x.moveTo(ox,oy-d2/2);x.lineTo(ox+d1/2,oy);x.lineTo(ox,oy+d2/2);x.lineTo(ox-d1/2,oy);x.closePath();x.fill();x.stroke();
+    x.setLineDash([3,3]);x.strokeStyle=C.muted;x.lineWidth=1;
+    x.beginPath();x.moveTo(ox-d1/2,oy);x.lineTo(ox+d1/2,oy);x.stroke();
+    x.beginPath();x.moveTo(ox,oy-d2/2);x.lineTo(ox,oy+d2/2);x.stroke();
+    x.setLineDash([]);
+    x.fillStyle=C.muted;x.font='11px Space Grotesk,sans-serif';x.textAlign='center';
+    x.fillText('d2 = '+p.d2,ox-15,oy-d2/4);
+    x.fillText('d1 = '+p.d1,ox+d1/4,oy+12);
+  }else if(p.type==='trapezium'){
+    const maxW=w-pad*2,maxH=h-pad*2;
+    const maxB=Math.max(p.a,p.b);
+    const scale=Math.min(maxW/maxB,maxH/p.h);
+    const a=p.a*scale,b=p.b*scale,h_=p.h*scale;
+    const ox=(w-b)/2,oy=(h-h_)/2;
+    const diff=(b-a)/2;
+    x.beginPath();x.moveTo(ox+diff,oy);x.lineTo(ox+diff+a,oy);x.lineTo(ox+b,oy+h_);x.lineTo(ox,oy+h_);x.closePath();x.fill();x.stroke();
+    x.setLineDash([3,3]);x.strokeStyle=C.muted;x.lineWidth=1;
+    x.beginPath();x.moveTo(ox+diff+a,oy);x.lineTo(ox+diff+a,oy+h_);x.stroke();
+    x.setLineDash([]);
+    x.fillStyle=C.muted;x.font='11px Space Grotesk,sans-serif';x.textAlign='center';
+    x.fillText('a = '+p.a,w/2,oy-8);
+    x.fillText('b = '+p.b,w/2,oy+h_+15);
+    x.textAlign='left';x.fillText('h = '+p.h,ox+diff+a+6,oy+h_/2);
+  }else if(p.type==='kite'){
+    const maxW=w-pad*2,maxH=h-pad*2;
+    const scale=Math.min(maxW/p.d2,maxH/p.d1);
+    const d1=p.d1*scale,d2=p.d2*scale;
+    const h1=d1*(p.cross/100);
+    const ox=w/2, oy=(h-d1)/2;
+    x.beginPath();
+    x.moveTo(ox, oy);
+    x.lineTo(ox + d2/2, oy + h1);
+    x.lineTo(ox, oy + d1);
+    x.lineTo(ox - d2/2, oy + h1);
+    x.closePath(); x.fill(); x.stroke();
+    x.setLineDash([3,3]);x.strokeStyle=C.muted;x.lineWidth=1;
+    x.beginPath();x.moveTo(ox, oy);x.lineTo(ox, oy + d1);x.stroke();
+    x.beginPath();x.moveTo(ox - d2/2, oy + h1);x.lineTo(ox + d2/2, oy + h1);x.stroke();
+    x.setLineDash([]);
+    x.fillStyle=C.muted;x.font='11px Space Grotesk,sans-serif';x.textAlign='center';
+    x.fillText('d2 = '+p.d2, ox - d2/4, oy + h1 - 6);
+    x.fillText('d1 = '+p.d1, ox + 6, oy + d1/4);
+  }else{
+    const sk=30,maxW=w-pad*2,maxH=h-pad*2;
+    const scale=Math.min(maxW/(p.b+sk),maxH/p.h);
+    const pb=p.b*scale,ph=p.h*scale;
+    const ox=(w-pb-sk*scale)/2,oy=(h-ph)/2;
+    x.beginPath();x.moveTo(ox,oy+ph);x.lineTo(ox+pb,oy+ph);x.lineTo(ox+pb+sk*scale,oy);x.lineTo(ox+sk*scale,oy);x.closePath();x.fill();x.stroke();
+    x.setLineDash([3,3]);x.strokeStyle=C.muted;x.lineWidth=1;
+    x.beginPath();x.moveTo(ox+pb,oy+ph);x.lineTo(ox+pb,oy);x.stroke();
+    x.setLineDash([]);
+    x.fillStyle=C.muted;x.font='11px Space Grotesk,sans-serif';x.textAlign='center';
+    x.fillText('h = '+p.h,ox+pb+12,oy+ph/2);
+  }
+  x.textAlign='start';
+}
+setTimeout(()=>selectQuad('square',document.querySelector('#m-quads .btn.active')),400);
+
+// ══════════════════════════════════════════
+//  7. POLYGON CANVAS
+// ══════════════════════════════════════════
+const polyNames=['','','','Triangle','Quadrilateral','Pentagon','Hexagon','Heptagon','Octagon','Nonagon','Decagon','Hendecagon','Dodecagon'];
+function updatePoly(n){
+  n=parseInt(n);
+  const sum=(n-2)*180;
+  const each=(sum/n).toFixed(1);
+  const ext=(360/n).toFixed(1);
+  document.getElementById('poly-n-label').textContent=n+' — '+polyNames[n];
+  document.getElementById('poly-sum').textContent=sum+'°';
+  document.getElementById('poly-each').textContent=each+'°';
+  document.getElementById('poly-ext').textContent=ext+'°';
+  drawPoly(n);
+}
+function drawPoly(n){
+  const el=ctx('poly-canvas');if(!el)return;
+  const {ctx:x,w,h}=el;
+  x.clearRect(0,0,w,h);
+  const r=Math.min(w,h)*0.38,cx=w/2,cy=h/2;
+  const offset=-Math.PI/2;
+  x.beginPath();
+  for(let i=0;i<n;i++){
+    const a=offset+i*2*Math.PI/n;
+    i===0?x.moveTo(cx+r*Math.cos(a),cy+r*Math.sin(a)):x.lineTo(cx+r*Math.cos(a),cy+r*Math.sin(a));
+  }
+  x.closePath();
+  x.fillStyle='rgba(0,229,255,0.06)';x.fill();
+  x.strokeStyle=C.cyan;x.lineWidth=2;x.stroke();
+  // Vertices
+  for(let i=0;i<n;i++){
+    const a=offset+i*2*Math.PI/n;
+    x.beginPath();x.arc(cx+r*Math.cos(a),cy+r*Math.sin(a),3.5,0,Math.PI*2);
+    x.fillStyle=C.cyan;x.fill();
+  }
+  // Label
+  x.font='bold 13px Space Grotesk,sans-serif';x.fillStyle=C.violet;x.textAlign='center';x.textBaseline='middle';
+  x.fillText('n = '+n,cx,cy);
+  x.textAlign='start';x.textBaseline='alphabetic';
+}
+setTimeout(()=>updatePoly(5),300);
+
+// ══════════════════════════════════════════
+//  8. CIRCLE CANVAS
+// ══════════════════════════════════════════
+let circlePart='radius';
+function setCP(part,btn){
+  circlePart=part;
+  document.querySelectorAll('#m-circles .btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  drawCircle(parseInt(document.getElementById('circle-r').value));
+}
+function updateCircle(r){
+  r=parseInt(r);
+  document.getElementById('c-r-val').textContent=r;
+  document.getElementById('c-diam').textContent=(r*2);
+  document.getElementById('c-circ').textContent=(2*Math.PI*r).toFixed(2);
+  document.getElementById('c-area').textContent=(Math.PI*r*r).toFixed(2);
+  drawCircle(r);
+}
+function drawCircle(r){
+  const el=ctx('circle-canvas');if(!el)return;
+  const {ctx:x,w,h}=el;
+  x.clearRect(0,0,w,h);
+  const cx=w/2,cy=h/2;
+  const scale=Math.min(w,h)*0.42/120;
+  const sr=r*scale;
+  // Circle
+  x.beginPath();x.arc(cx,cy,sr,0,Math.PI*2);
+  x.fillStyle='rgba(0,229,255,0.05)';x.fill();
+  x.strokeStyle=C.cyan;x.lineWidth=2;x.stroke();
+  // Centre
+  x.beginPath();x.arc(cx,cy,3,0,Math.PI*2);x.fillStyle=C.cyan;x.fill();
+  if(circlePart==='radius'){
+    x.strokeStyle=C.cyan;x.lineWidth=2;
+    x.beginPath();x.moveTo(cx,cy);x.lineTo(cx+sr,cy);x.stroke();
+    x.fillStyle=C.cyan;x.font='11px Space Grotesk,sans-serif';x.textAlign='center';
+    x.fillText('r = '+r,cx+sr/2,cy-8);
+  }else if(circlePart==='chord'){
+    const a1=-Math.PI/4,a2=Math.PI/5;
+    x.strokeStyle=C.violet;x.lineWidth=2.5;
+    x.beginPath();x.moveTo(cx+sr*Math.cos(a1),cy+sr*Math.sin(a1));x.lineTo(cx+sr*Math.cos(a2),cy+sr*Math.sin(a2));x.stroke();
+    x.fillStyle=C.violet;x.font='11px Space Grotesk,sans-serif';x.textAlign='center';
+    x.fillText('Chord',cx+sr*0.6,cy-sr*0.4);
+  }else if(circlePart==='tangent'){
+    const tx=cx+sr,ty=cy;
+    x.strokeStyle=C.teal;x.lineWidth=2;
+    x.beginPath();x.moveTo(tx,ty-sr*0.8);x.lineTo(tx,ty+sr*0.8);x.stroke();
+    x.strokeStyle=C.muted;x.lineWidth=1;x.setLineDash([3,3]);
+    x.beginPath();x.moveTo(cx,cy);x.lineTo(tx,ty);x.stroke();x.setLineDash([]);
+    // Right angle mark
+    x.strokeStyle=C.teal;x.lineWidth=1.5;
+    x.beginPath();x.moveTo(tx-10,ty);x.lineTo(tx-10,ty-10);x.lineTo(tx,ty-10);x.stroke();
+  }else if(circlePart==='sector'){
+    x.beginPath();x.moveTo(cx,cy);x.arc(cx,cy,sr,-Math.PI/3,Math.PI/3);x.closePath();
+    x.fillStyle='rgba(245,158,11,0.2)';x.fill();
+    x.strokeStyle=C.amber;x.lineWidth=2;x.stroke();
+    x.fillStyle=C.amber;x.font='11px Space Grotesk,sans-serif';x.textAlign='center';
+    x.fillText('Sector',cx+sr*0.45,cy-4);
+  }
+  x.textAlign='start';
+}
+setTimeout(()=>updateCircle(80),300);
+
+// ══════════════════════════════════════════
+//  9. COORDINATE CANVAS
+// ══════════════════════════════════════════
+function updateCoords(){
+  const ax=+document.getElementById('ax').value||0;
+  const ay=+document.getElementById('ay').value||0;
+  const bx=+document.getElementById('bx').value||0;
+  const by=+document.getElementById('by').value||0;
+  const dist=Math.sqrt((bx-ax)**2+(by-ay)**2);
+  const mx=(ax+bx)/2,my=(ay+by)/2;
+  const grad=bx!==ax?(by-ay)/(bx-ax):Infinity;
+  const intercept=isFinite(grad)?ay-grad*ax:null;
+  document.getElementById('c-dist').textContent=dist.toFixed(2);
+  document.getElementById('c-mid').textContent=`(${mx.toFixed(1)}, ${my.toFixed(1)})`;
+  document.getElementById('c-grad').textContent=isFinite(grad)?grad.toFixed(2):'∞ (vertical)';
+  if(isFinite(grad)&&intercept!==null){
+    document.getElementById('c-eq').textContent=`y = ${grad.toFixed(2)}x + ${intercept.toFixed(2)}`;
+  }
+  drawCoords(ax,ay,bx,by,mx,my);
+}
+function drawCoords(ax,ay,bx,by,mx,my){
+  const el=ctx('coord-canvas');if(!el)return;
+  const {ctx:x,w,h}=el;
+  x.clearRect(0,0,w,h);
+  const scale=Math.min(w,h)/(26);
+  const cx=w/2,cy=h/2;
+  // Grid
+  x.strokeStyle='rgba(255,255,255,0.04)';x.lineWidth=0.8;
+  for(let i=-12;i<=12;i++){
+    x.beginPath();x.moveTo(cx+i*scale,0);x.lineTo(cx+i*scale,h);x.stroke();
+    x.beginPath();x.moveTo(0,cy-i*scale);x.lineTo(w,cy-i*scale);x.stroke();
+  }
+  // Axes
+  x.strokeStyle='rgba(255,255,255,0.15)';x.lineWidth=1.5;
+  x.beginPath();x.moveTo(0,cy);x.lineTo(w,cy);x.stroke();
+  x.beginPath();x.moveTo(cx,0);x.lineTo(cx,h);x.stroke();
+  x.fillStyle='rgba(255,255,255,0.2)';x.font='9px JetBrains Mono,monospace';
+  [-8,-4,4,8].forEach(n=>{x.fillText(n,cx+n*scale-3,cy+11);x.fillText(-n,cx+3,cy-n*scale+3);});
+  // Line between points
+  x.strokeStyle='rgba(167,139,250,0.4)';x.lineWidth=1.5;x.setLineDash([4,4]);
+  x.beginPath();x.moveTo(cx+ax*scale,cy-ay*scale);x.lineTo(cx+bx*scale,cy-by*scale);x.stroke();x.setLineDash([]);
+  // Midpoint
+  x.beginPath();x.arc(cx+mx*scale,cy-my*scale,4,0,Math.PI*2);x.fillStyle=C.amber;x.fill();
+  // Points
+  x.beginPath();x.arc(cx+ax*scale,cy-ay*scale,5,0,Math.PI*2);x.fillStyle=C.cyan;x.fill();
+  x.beginPath();x.arc(cx+bx*scale,cy-by*scale,5,0,Math.PI*2);x.fillStyle=C.violet;x.fill();
+  // Labels
+  x.font='11px Space Grotesk,sans-serif';
+  x.fillStyle=C.cyan;x.fillText(`A(${ax},${ay})`,cx+ax*scale+7,cy-ay*scale-7);
+  x.fillStyle=C.violet;x.fillText(`B(${bx},${by})`,cx+bx*scale+7,cy-by*scale-7);
+}
+setTimeout(updateCoords,300);
+
+// ══════════════════════════════════════════
+//  10. MENSURATION - TABS
+// ══════════════════════════════════════════
+function setTab(id,btn){
+  document.querySelectorAll('#m-mensuration .tab-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('#m-mensuration .tc').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById(id).classList.add('active');
+  if(id==='t-mcalc')updateCalc();
+}
+function updateCalc(){
+  const shape=document.getElementById('calc-shape').value;
+  const ci=document.getElementById('calc-inputs');
+  const twoD=['sq','rect','para','rhombus','trap','kite','circ','tri','tri_h'].includes(shape);
+  const inputs={
+    sq:'<label class="fl" style="margin-top:0;">Side (a)</label><input type="number" id="ci1" value="5" min="0" oninput="runCalc()">',
+    rect:'<label class="fl" style="margin-top:0;">Length</label><input type="number" id="ci1" value="8" min="0" oninput="runCalc()"><label class="fl">Width</label><input type="number" id="ci2" value="5" min="0" oninput="runCalc()">',
+    para:'<label class="fl" style="margin-top:0;">Base</label><input type="number" id="ci1" value="8" min="0" oninput="runCalc()"><label class="fl">Height</label><input type="number" id="ci2" value="5" min="0" oninput="runCalc()"><label class="fl">Side Length</label><input type="number" id="ci3" value="6" min="0" oninput="runCalc()">',
+    rhombus:'<label class="fl" style="margin-top:0;">Diagonal 1</label><input type="number" id="ci1" value="6" min="0" oninput="runCalc()"><label class="fl">Diagonal 2</label><input type="number" id="ci2" value="8" min="0" oninput="runCalc()">',
+    trap:'<label class="fl" style="margin-top:0;">Top Base (a)</label><input type="number" id="ci1" value="4" min="0" oninput="runCalc()"><label class="fl">Bottom Base (b)</label><input type="number" id="ci2" value="8" min="0" oninput="runCalc()"><label class="fl">Height</label><input type="number" id="ci3" value="5" min="0" oninput="runCalc()">',
+    kite:'<label class="fl" style="margin-top:0;">Diagonal 1</label><input type="number" id="ci1" value="10" min="0" oninput="runCalc()"><label class="fl">Diagonal 2</label><input type="number" id="ci2" value="6" min="0" oninput="runCalc()"><label class="fl">Top Side</label><input type="number" id="ci3" value="4" min="0" oninput="runCalc()">',
+    circ:'<label class="fl" style="margin-top:0;">Radius</label><input type="number" id="ci1" value="7" min="0" oninput="runCalc()">',
+    tri:'<label class="fl" style="margin-top:0;">Base</label><input type="number" id="ci1" value="8" min="0" oninput="runCalc()"><label class="fl">Height</label><input type="number" id="ci2" value="5" min="0" oninput="runCalc()">',
+    tri_h:'<label class="fl" style="margin-top:0;">Side a</label><input type="number" id="ci1" value="3" min="0" oninput="runCalc()"><label class="fl">Side b</label><input type="number" id="ci2" value="4" min="0" oninput="runCalc()"><label class="fl">Side c</label><input type="number" id="ci3" value="5" min="0" oninput="runCalc()">',
+    cube:'<label class="fl" style="margin-top:0;">Side (a)</label><input type="number" id="ci1" value="4" min="0" oninput="runCalc()">',
+    cuboid:'<label class="fl" style="margin-top:0;">Length</label><input type="number" id="ci1" value="5" min="0" oninput="runCalc()"><label class="fl">Width</label><input type="number" id="ci2" value="4" min="0" oninput="runCalc()"><label class="fl">Height</label><input type="number" id="ci3" value="3" min="0" oninput="runCalc()">',
+    sph:'<label class="fl" style="margin-top:0;">Radius</label><input type="number" id="ci1" value="6" min="0" oninput="runCalc()">',
+    cyl:'<label class="fl" style="margin-top:0;">Radius</label><input type="number" id="ci1" value="5" min="0" oninput="runCalc()"><label class="fl">Height</label><input type="number" id="ci2" value="10" min="0" oninput="runCalc()">',
+    cone:'<label class="fl" style="margin-top:0;">Radius</label><input type="number" id="ci1" value="5" min="0" oninput="runCalc()"><label class="fl">Height</label><input type="number" id="ci2" value="12" min="0" oninput="runCalc()">',
+    tetra:'<label class="fl" style="margin-top:0;">Edge (a)</label><input type="number" id="ci1" value="4" min="0" oninput="runCalc()">',
+    octa:'<label class="fl" style="margin-top:0;">Edge (a)</label><input type="number" id="ci1" value="4" min="0" oninput="runCalc()">',
+    dodeca:'<label class="fl" style="margin-top:0;">Edge (a)</label><input type="number" id="ci1" value="4" min="0" oninput="runCalc()">',
+    icosa:'<label class="fl" style="margin-top:0;">Edge (a)</label><input type="number" id="ci1" value="4" min="0" oninput="runCalc()">'
+  };
+  ci.innerHTML=inputs[shape]||'';
+  runCalc();
+}
+function runCalc(){
+  const shape=document.getElementById('calc-shape').value;
+  const v1=+document.getElementById('ci1')?.value||0;
+  const v2=+document.getElementById('ci2')?.value||0;
+  const v3=+document.getElementById('ci3')?.value||0;
+  let r={};
+  if(shape==='sq')r={Area:(v1*v1).toFixed(2),Perimeter:(4*v1).toFixed(2)};
+  else if(shape==='rect')r={Area:(v1*v2).toFixed(2),Perimeter:(2*(v1+v2)).toFixed(2)};
+  else if(shape==='para')r={Area:(v1*v2).toFixed(2),Perimeter:(2*(v1+v3)).toFixed(2)};
+  else if(shape==='rhombus'){const s=Math.sqrt((v1/2)**2+(v2/2)**2); r={Area:((v1*v2)/2).toFixed(2),Perimeter:(4*s).toFixed(2)};}
+  else if(shape==='trap'){const s1=Math.sqrt(v3**2+((v2-v1)/2)**2); r={Area:((v1+v2)/2*v3).toFixed(2),Perimeter:(v1+v2+2*s1).toFixed(2)};}
+  else if(shape==='kite'){const h1=Math.sqrt(Math.max(0, v3**2-(v2/2)**2)); const s2=Math.sqrt((v1-h1)**2+(v2/2)**2); r={Area:((v1*v2)/2).toFixed(2),Perimeter:(2*v3+2*s2).toFixed(2)};}
+  else if(shape==='circ')r={Area:(Math.PI*v1*v1).toFixed(3),Circumference:(2*Math.PI*v1).toFixed(3)};
+  else if(shape==='tri')r={Area:(0.5*v1*v2).toFixed(2),Perimeter:'—'};
+  else if(shape==='tri_h'){const s=(v1+v2+v3)/2; const a=Math.sqrt(Math.max(0, s*(s-v1)*(s-v2)*(s-v3))); r={Area:a>0?a.toFixed(2):'Invalid',Perimeter:(v1+v2+v3).toFixed(2)};}
+  else if(shape==='cube')r={Volume:(v1**3).toFixed(2),'Surface Area':(6*v1*v1).toFixed(2)};
+  else if(shape==='cuboid')r={Volume:(v1*v2*v3).toFixed(2),'Surface Area':(2*(v1*v2+v2*v3+v1*v3)).toFixed(2)};
+  else if(shape==='sph')r={Volume:((4/3)*Math.PI*v1**3).toFixed(3),'Surface Area':(4*Math.PI*v1*v1).toFixed(3)};
+  else if(shape==='cyl')r={Volume:(Math.PI*v1*v1*v2).toFixed(3),'Surface Area':(2*Math.PI*v1*(v1+v2)).toFixed(3)};
+  else if(shape==='cone'){const l=Math.sqrt(v1*v1+v2*v2);r={Volume:((1/3)*Math.PI*v1*v1*v2).toFixed(3),'Surface Area':(Math.PI*v1*(v1+l)).toFixed(3)};}
+  else if(shape==='tetra')r={Volume:((v1**3)/(6*Math.sqrt(2))).toFixed(3),'Surface Area':(Math.sqrt(3)*v1**2).toFixed(3)};
+  else if(shape==='octa')r={Volume:((Math.sqrt(2)/3)*v1**3).toFixed(3),'Surface Area':(2*Math.sqrt(3)*v1**2).toFixed(3)};
+  else if(shape==='dodeca')r={Volume:(7.66311896*v1**3).toFixed(3),'Surface Area':(20.6457288*v1**2).toFixed(3)};
+  else if(shape==='icosa')r={Volume:(2.18169699*v1**3).toFixed(3),'Surface Area':(8.66025403*v1**2).toFixed(3)};
+  document.getElementById('calc-results').innerHTML=Object.entries(r).map(([k,v])=>`<div class="fc"><div class="fc-name">${k}</div><div class="fc-eq">${v}</div></div>`).join('');
+}
+setTimeout(updateCalc,500);
+
+// ══════════════════════════════════════════
+//  10. FORMULA LIBRARY SEARCH
+// ══════════════════════════════════════════
+function filterFormulas(q){
+  const items=document.querySelectorAll('#flib-grid .fc');
+  items.forEach(it=>{
+    const match=!q||it.dataset.tags.includes(q.toLowerCase())||it.querySelector('.fc-name').textContent.toLowerCase().includes(q.toLowerCase());
+    it.style.display=match?'':'none';
+  });
+}
+
+// ══════════════════════════════════════════
+//  11. THREE.JS 3D VIEWER
+// ══════════════════════════════════════════
+let labScene,labCamera,labRenderer,labMesh,labWireframe=false,labRotating=true,labAnimId;
+const labData={
+  tetra:{v:4,e:6,f:4,name:'Tetrahedron',vol:'0.12'},
+  cube:{v:8,e:12,f:6,name:'Hexahedron (Cube)',vol:'1.00'},
+  octa:{v:6,e:12,f:8,name:'Octahedron',vol:'0.47'},
+  dodeca:{v:20,e:30,f:12,name:'Dodecahedron',vol:'2.79'},
+  icosa:{v:12,e:30,f:20,name:'Icosahedron',vol:'0.60'},
+  sphere:{v:'∞',e:'∞',f:'∞',name:'Sphere',vol:'3.14'},
+  cylinder:{v:'∞',e:'∞',f:'∞',name:'Cylinder',vol:'3.14'},
+  cone:{v:'∞',e:'∞',f:'∞',name:'Cone',vol:'1.05'},
+  torus:{v:'∞',e:'∞',f:'∞',name:'Torus',vol:'2.47'},
+  prism:{v:6,e:9,f:5,name:'Triangular Prism',vol:'1.25'},
+  pyramid:{v:5,e:8,f:5,name:'Square Pyramid',vol:'0.64'}
+};
+function initLab(){
+  const wrap=document.getElementById('lab-wrap');
+  if(!wrap||!window.THREE)return;
+  labScene=new THREE.Scene();
+  labCamera=new THREE.PerspectiveCamera(50,wrap.clientWidth/wrap.clientHeight,0.1,100);
+  labCamera.position.set(0,1.5,4);
+  labRenderer=new THREE.WebGLRenderer({antialias:true,alpha:true});
+  labRenderer.setPixelRatio(window.devicePixelRatio);
+  labRenderer.setSize(wrap.clientWidth,wrap.clientHeight);
+  wrap.appendChild(labRenderer.domElement);
+  // Lights
+  const amb=new THREE.AmbientLight(0xffffff,0.4);labScene.add(amb);
+  const p1=new THREE.PointLight(0x00e5ff,1.5,20);p1.position.set(3,4,3);labScene.add(p1);
+  const p2=new THREE.PointLight(0x7c3aed,1,15);p2.position.set(-3,-2,-3);labScene.add(p2);
+  // OrbitControls fallback
+  let isDragging=false,prevX=0,prevY=0,rotX=0.3,rotY=0,zoom=4;
+  labRenderer.domElement.addEventListener('mousedown',e=>{isDragging=true;prevX=e.clientX;prevY=e.clientY;});
+  window.addEventListener('mouseup',()=>isDragging=false);
+  window.addEventListener('mousemove',e=>{if(!isDragging)return;rotX-=(e.clientY-prevY)*0.008;rotY+=(e.clientX-prevX)*0.008;prevX=e.clientX;prevY=e.clientY;labCamera.position.set(zoom*Math.sin(rotY)*Math.cos(rotX),zoom*Math.sin(rotX),zoom*Math.cos(rotY)*Math.cos(rotX));labCamera.lookAt(0,0,0);});
+  labRenderer.domElement.addEventListener('touchstart',e=>{isDragging=true;prevX=e.touches[0].clientX;prevY=e.touches[0].clientY;},{passive:true});
+  window.addEventListener('touchend',()=>isDragging=false);
+  window.addEventListener('touchmove',e=>{if(!isDragging)return;const dx=e.touches[0].clientX-prevX,dy=e.touches[0].clientY-prevY;rotX-=dy*0.008;rotY+=dx*0.008;prevX=e.touches[0].clientX;prevY=e.touches[0].clientY;labCamera.position.set(zoom*Math.sin(rotY)*Math.cos(rotX),zoom*Math.sin(rotX),zoom*Math.cos(rotY)*Math.cos(rotX));labCamera.lookAt(0,0,0);},{passive:true});
+  labRenderer.domElement.addEventListener('wheel',e=>{zoom=Math.max(2,Math.min(8,zoom+e.deltaY*0.003));labCamera.position.set(zoom*Math.sin(rotY)*Math.cos(rotX),zoom*Math.sin(rotX),zoom*Math.cos(rotY)*Math.cos(rotX));labCamera.lookAt(0,0,0);},{passive:true});
+  setLabShape('tetra');
+  (function animate(){labAnimId=requestAnimationFrame(animate);if(labMesh&&labRotating)labMesh.rotation.y+=0.006;labRenderer.render(labScene,labCamera);})();
+  window.addEventListener('resize',()=>{if(!wrap)return;labCamera.aspect=wrap.clientWidth/wrap.clientHeight;labCamera.updateProjectionMatrix();labRenderer.setSize(wrap.clientWidth,wrap.clientHeight);});
+}
+function getGeom(shape,scale){
+  const s=scale||1;
+  const g={
+    tetra:()=>new THREE.TetrahedronGeometry(s),
+    cube:()=>new THREE.BoxGeometry(s*1.5,s*1.5,s*1.5),
+    octa:()=>new THREE.OctahedronGeometry(s),
+    dodeca:()=>new THREE.DodecahedronGeometry(s),
+    icosa:()=>new THREE.IcosahedronGeometry(s),
+    sphere:()=>new THREE.SphereGeometry(s,32,32),
+    cylinder:()=>new THREE.CylinderGeometry(s*0.7,s*0.7,s*1.4,32),
+    cone:()=>new THREE.ConeGeometry(s*0.8,s*1.6,32),
+    torus:()=>new THREE.TorusGeometry(s*0.8,s*0.3,16,50),
+    prism:()=>new THREE.CylinderGeometry(s*0.8,s*0.8,s*1.5,3),
+    pyramid:()=>new THREE.ConeGeometry(s*0.8,s*1.5,4)
+  };
+  return (g[shape]||g['cube'])();
+}
+function setLabShape(shape){
+  if(!labScene)return;
+  if(labMesh)labScene.remove(labMesh);
+  const geom=getGeom(shape);
+  const mat=new THREE.MeshPhongMaterial({color:0x0d1a30,emissive:0x061224,specular:0x00e5ff,shininess:80,wireframe:labWireframe});
+  labMesh=new THREE.Mesh(geom,mat);
+  labScene.add(labMesh);
+  const d=labData[shape]||labData.cube;
+  document.getElementById('lab-v').textContent=d.v;
+  document.getElementById('lab-e').textContent=d.e;
+  document.getElementById('lab-f').textContent=d.f;
+  document.getElementById('lab-name').textContent=d.name;
+  document.getElementById('lab-vol').textContent=d.vol;
+}
+function toggleWireframe(){labWireframe=!labWireframe;if(labMesh&&labMesh.material)labMesh.material.wireframe=labWireframe;document.getElementById('wf-btn').textContent=labWireframe?'Solid Mode':'Toggle Wireframe';}
+function toggleRotation(){labRotating=!labRotating;document.getElementById('rot-btn').textContent=labRotating?'Pause Rotation':'Resume Rotation';}
+function updateLabScale(v){
+  document.getElementById('lab-scale-val').textContent=v+'×';
+  if(!labScene)return;
+  const shape=document.getElementById('lab-shape').value;
+  if(labMesh)labScene.remove(labMesh);
+  const geom=getGeom(shape,parseFloat(v));
+  const mat=new THREE.MeshPhongMaterial({color:0x0d1a30,emissive:0x061224,specular:0x00e5ff,shininess:80,wireframe:labWireframe});
+  labMesh=new THREE.Mesh(geom,mat);
+  labScene.add(labMesh);
+}
+document.getElementById('lab-shape').addEventListener('change',e=>setLabShape(e.target.value));
+
+// ══════════════════════════════════════════
+//  12. TRANSFORMATION CANVAS
+// ══════════════════════════════════════════
+function updateTrans(){
+  const tx=+document.getElementById('trans-x').value;
+  const ty=+document.getElementById('trans-y').value;
+  const rot=+document.getElementById('trans-rot').value;
+  const sc=+document.getElementById('trans-scale').value;
+  document.getElementById('trans-rot-val').textContent=rot+'°';
+  document.getElementById('trans-scale-val').textContent=sc.toFixed(1)+'×';
+  drawTrans(tx,ty,rot,sc);
+}
+function resetTrans(){
+  document.getElementById('trans-x').value=0;
+  document.getElementById('trans-y').value=0;
+  document.getElementById('trans-rot').value=0;
+  document.getElementById('trans-scale').value=1;
+  updateTrans();
+}
+function drawTrans(tx,ty,rot,sc){
+  const el=ctx('trans-canvas');if(!el)return;
+  const {ctx:x,w,h}=el;
+  x.clearRect(0,0,w,h);
+  const cx=w/2,cy=h/2;
+  // Grid
+  x.strokeStyle='rgba(255,255,255,0.04)';x.lineWidth=0.8;
+  for(let i=0;i<=w;i+=20){x.beginPath();x.moveTo(i,0);x.lineTo(i,h);x.stroke();}
+  for(let i=0;i<=h;i+=20){x.beginPath();x.moveTo(0,i);x.lineTo(w,i);x.stroke();}
+  // Original shape (ghost)
+  x.strokeStyle='rgba(255,255,255,0.12)';x.lineWidth=1;x.fillStyle='rgba(255,255,255,0.03)';
+  x.beginPath();x.rect(cx-30,cy-30,60,60);x.fill();x.stroke();
+  // Transformed shape
+  x.save();
+  x.translate(cx+tx,cy-ty);
+  x.rotate(rot*Math.PI/180);
+  x.scale(sc,sc);
+  x.strokeStyle=C.cyan;x.lineWidth=2;x.fillStyle='rgba(0,229,255,0.1)';
+  x.beginPath();x.rect(-30,-30,60,60);x.fill();x.stroke();
+  // Corner dots
+  [[-30,-30],[30,-30],[30,30],[-30,30]].forEach(([px,py])=>{
+    x.beginPath();x.arc(px,py,3,0,Math.PI*2);x.fillStyle=C.cyan;x.fill();
+  });
+  x.restore();
+}
+setTimeout(()=>updateTrans(),300);
+
+// ══════════════════════════════════════════
+//  MODULE INIT ROUTER
+// ══════════════════════════════════════════
+// Module draw map (called every time module becomes visible)
+const moduleDraw={
+  'm-basics':()=>drawBasics(),
+  'm-angles':()=>updateAngle(document.getElementById('angle-slider').value),
+  'm-lines':()=>drawLines(),
+  'm-triangles':()=>updatePythag(),
+  'm-quads':()=>{
+    const activeBtn=document.querySelector('#m-quads .br .btn.active')||
+                    document.querySelector('#m-quads .br .btn');
+    if(activeBtn)selectQuad(quadMode,activeBtn);
+    else calcQuad();
+  },
+  'm-polygons':()=>updatePoly(document.getElementById('poly-slider').value),
+  'm-circles':()=>updateCircle(document.getElementById('circle-r').value),
+  'm-coords':()=>updateCoords(),
+  'm-3d':()=>{ if(!labScene)initLab(); },
+  'm-advanced':()=>updateTrans()
+};
+function initModule(id){
+  // Always re-draw when module becomes visible (canvas was hidden = 0 size before)
+  if(moduleDraw[id])setTimeout(moduleDraw[id],60);
+}
+
+// Init first module
+setTimeout(()=>initModule('m-intro'),100);
+setTimeout(()=>initModule('m-basics'),200);
+</script>
+</body>
+</html>
