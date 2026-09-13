@@ -1,4 +1,4 @@
-# geo-3d
+# geo 3d
 
 ## Overview
 GEO 3D is a premium, portfolio-level web application designed to bring mathematics and geometry to life. Featuring a state-of-the-art interactive 3D viewer, real-time physics, and a comprehensive educational encyclopedia, this project aims to make exploring geometry engaging, intuitive, and visually stunning.
