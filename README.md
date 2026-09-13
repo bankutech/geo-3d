@@ -1,10 +1,11 @@
-# GEO 3D 🧊 — Interactive Geometry Encyclopedia
+# geo-3d
 
+## Overview
 GEO 3D is a premium, portfolio-level web application designed to bring mathematics and geometry to life. Featuring a state-of-the-art interactive 3D viewer, real-time physics, and a comprehensive educational encyclopedia, this project aims to make exploring geometry engaging, intuitive, and visually stunning.
 
 ![Geometry Scene](assets/geometry-scene.png)
 
-## ✨ Features
+##  Features
 
 *   **Interactive 3D Shape Viewer:** Render and explore over 15 distinct geometric primitives and complex topological shapes (from simple cones to complex torus knots and icosahedrons).
 *   **Real-time Physics Engine:** Built-in `CANNON.js` physics integration. Toggle gravity and watch 3D shapes physically interact and bounce with realistic restitution and friction.
@@ -13,7 +14,7 @@ GEO 3D is a premium, portfolio-level web application designed to bring mathemati
 *   **Mathematical Foundations:** Explore interactive formulas, coordinate systems, matrices, and quaternions.
 *   **Premium Glassmorphic UI:** Modern frosted-glass aesthetics, fluid scroll animations, dynamic glow cursors, and full responsive support for mobile devices.
 
-## 🛠️ Technology Stack
+## ️ Technology Stack
 
 *   **Core:** HTML5, CSS3 (Vanilla), JavaScript (ES6+)
 *   **3D Rendering:** `Three.js` (r128)
@@ -21,7 +22,7 @@ GEO 3D is a premium, portfolio-level web application designed to bring mathemati
 *   **Post-processing:** `Three.js EffectComposer` (UnrealBloomPass for neon emission effects)
 *   **Styling:** Zero CSS frameworks. Custom CSS variables, Grid/Flexbox layouts, and keyframe animations.
 
-## 📂 Project Structure
+##  Project Structure
 
 *   `index.html` - The main entry point featuring the 3D Viewer and Shape Library.
 *   `learn.html` - The Interactive Geometry Encyclopedia.
@@ -31,7 +32,7 @@ GEO 3D is a premium, portfolio-level web application designed to bring mathemati
 *   `js/script.js` - Global interactions, Three.js initialization, physics loop, and post-processing.
 *   `js/learn.js` - Logic for the interactive encyclopedia calculators and dynamic canvas simulations.
 
-## 🚀 How to Run Locally
+##  How to Run Locally
 
 Because the project loads external textures and JavaScript modules via WebGL, it **must** be run through a local HTTP server (opening `index.html` directly in the browser via `file://` will result in CORS errors).
 
@@ -61,8 +62,14 @@ If you use Visual Studio Code as your editor:
 1. Install the **Live Server** extension by Ritwick Dey.
 2. Right-click `index.html` and select **"Open with Live Server"**.
 
-## 🤝 Contributing
+##  Contributing
 Contributions are always welcome! Whether it's adding new shapes, refining physics properties, or expanding the educational encyclopedia. Feel free to open an issue or submit a pull request.
 
-## 📝 License
+##  License
 &copy; 2026 Geometry in Three Dimensions. All rights reserved.
+
+## Getting Started
+Please refer to the source files for specific installation and usage instructions. Ensure that your local environment meets the standard requirements for the associated technologies.
+
+## Project Structure
+This project is organized into standard directories. Key configuration files and primary source code are located in the root directory.
